@@ -91,7 +91,12 @@ The platform also includes user authentication, FAQs, match history tracking, an
 ---
 
 ## 📸 Screenshots
-(Add screenshots of the main pages here)
+<img width="1919" height="914" alt="image" src="https://github.com/user-attachments/assets/92958f61-a904-4ccf-b867-5ccc8ff92959" />
+<img width="1917" height="911" alt="image" src="https://github.com/user-attachments/assets/e96691fd-765f-464e-ad57-038aebfbca66" />
+<img width="1917" height="904" alt="image" src="https://github.com/user-attachments/assets/08435200-0cbf-44d7-9bb9-7a1228396b27" />
+<img width="1919" height="913" alt="image" src="https://github.com/user-attachments/assets/9984d7f6-22e7-4281-a325-d3bab4968f5b" />
+<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/1ce19491-93d8-4b4a-a720-54e4eb8df71a" />
+
 
 ---
 
