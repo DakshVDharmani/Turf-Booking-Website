@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Turf Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-color: #1a2a24;
+            --bg-light: #e6f4e6;
+            --bg-dark: #1a3c34;
+            --text-white: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-light: var(--bg-dark);
+            --text-color: var(--text-white);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-color);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .content-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1517649765268-fb10c0c2fe6d') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        .toggle-dark {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+            z-index: 2;
+            background: var(--light-green);
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        body.dark-mode .toggle-dark {
+            background: var(--dark-green);
+            color: var(--text-color);
+        }
+
+        .toggle-dark:hover {
+            background: var(--accent-green);
+        }
+
+        .policy-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--bg-light);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .policy-container h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .policy-container p, .policy-container li {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 0.8rem;
+            color: var(--text-color);
+        }
+
+        .policy-container ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .chatbot-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 340px;
+            height: 520px;
+            z-index: 1000;
+        }
+
+        .chatbot-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--text-white);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1.2rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: var(--text-white);
+        }
+
+        footer .social-links a {
+            color: var(--text-white);
+            font-size: 1.8rem;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-links a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .chatbot-wrapper {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .policy-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .chatbot-wrapper {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div class="chatbot-wrapper">
+        <iframe src="turftalk_chatbot.html" title="TurfTalk Chatbot"></iframe>
+    </div>
+    <a href="#" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <div class="content-wrapper">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Privacy Policy</h1>
+                <p>Learn how we collect, use, and protect your personal information.</p>
+                <button class="toggle-dark" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            </div>
+        </section>
+        <div class="policy-container">
+            <h2>1. Information We Collect</h2>
+            <p>We collect:</p>
+            <ul>
+                <li>Personal info (e.g., name, email, username) during account creation.</li>
+                <li>Booking and payment details for turf reservations.</li>
+                <li>Usage data (e.g., browsing patterns) to improve our services.</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>We use your data to:</p>
+            <ul>
+                <li>Process bookings and payments.</li>
+                <li>Send service-related notifications.</li>
+                <li>Enhance user experience and site functionality.</li>
+            </ul>
+
+            <h2>3. Data Sharing</h2>
+            <p>We do not sell your data. We may share it with:</p>
+            <ul>
+                <li>Payment processors to complete transactions.</li>
+                <li>Legal authorities if required by law.</li>
+            </ul>
+
+            <h2>4. Data Security</h2>
+            <p>We use industry-standard encryption to protect your data, but no system is fully secure. You are responsible for safeguarding your account credentials.</p>
+
+            <h2>5. Your Rights</h2>
+            <p>You can:</p>
+            <ul>
+                <li>Access or update your personal information.</li>
+                <li>Request deletion of your account.</li>
+                <li>Opt out of marketing communications.</li>
+            </ul>
+
+            <h2>6. Cookies</h2>
+            <p>We use cookies to enhance your experience. You can disable cookies in your browser settings, but some features may not work.</p>
+
+            <h2>7. Changes to Policy</h2>
+            <p>We may update this policy. Changes will be posted here, and continued use implies acceptance.</p>
+
+            <h2>8. Contact Us</h2>
+            <p>For questions, contact us at <a href="mailto:support@turfbooking.com" class="text-[var(--secondary-green)] hover:text-[var(--primary-green)]">support@turfbooking.com</a>.</p>
+        </div>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-links mt-4">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">© 2025 Turf Booking. All rights reserved.</p>
+        </footer>
+    </div>
+    <script>
+        // Particle animations
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0;  i < 50; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 5 + 2;
+                particle.style.position = 'absolute';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { transform: translateY(-20px); opacity: 0.8; }
+                100% { transform: translateY(0); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Back-to-top button
+        const backToTop = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backToTop.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Ball Trajectory Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #e6f4e6; 
+            color: #2f4f2f; 
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #4a7043; 
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        #videoContainer {
+            position: relative;
+            margin: 20px 0;
+            border: 2px solid #4a7043;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #video, #canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+        #video {
+            z-index: 1;
+        }
+        #upload, #batsmanHeight, #waistToHeadPixels {
+            padding: 10px;
+            font-size: 1em;
+            margin: 10px;
+            border: 1px solid #4a7043;
+            border-radius: 4px;
+            background-color: #f5faf5;
+        }
+        #controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4a7043;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3a5a36;
+        }
+        #result {
+            font-size: 1.2em;
+            color: #2f4f2f;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #d4e8d4;
+            border-radius: 4px;
+            min-width: 200px;
+            text-align: center;
+        }
+        label {
+            font-size: 1em;
+            margin: 10px 0 5px;
+            color: #4a7043;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            #videoContainer {
+                max-width: 100%;
+            }
+            button, #upload, #batsmanHeight, #waistToHeadPixels {
+                font-size: 0.9em;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Cricket Ball Trajectory Tracker</h1>
+    <input type="file" id="upload" accept="video/*">
+    <div class="input-group">
+        <label for="batsmanHeight">Enter batsman height (meters):</label>
+        <input type="number" id="batsmanHeight" step="0.1" placeholder="e.g., 1.8">
+        <label for="waistToHeadPixels">Enter waist-to-head distance in pixels (measure in video):</label>
+        <input type="number" id="waistToHeadPixels" placeholder="e.g., 90">
+    </div>
+    <div id="videoContainer">
+        <video id="video" controls></video>
+        <canvas id="canvas"></canvas>
+    </div>
+    <div id="controls">
+        <button id="trackButton">Track Ball</button>
+        <button id="resetButton">Reset</button>
+    </div>
+    <div id="result">Range: Not calculated</div>
+
+    <script src="opencv.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const upload = document.getElementById('upload');
+        const trackButton = document.getElementById('trackButton');
+        const resetButton = document.getElementById('resetButton');
+        const result = document.getElementById('result');
+        const batsmanHeightInput = document.getElementById('batsmanHeight');
+        const waistToHeadPixelsInput = document.getElementById('waistToHeadPixels');
+
+        let isTracking = false;
+        let trajectory = [];
+        let prevGray = null;
+        let launchAngle = 0;
+        let ballPosition = null;
+
+        upload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    video.playbackRate = 0.25; 
+                    video.play();
+                    batsmanHeightInput.style.display = 'block';
+                    waistToHeadPixelsInput.style.display = 'block';
+                };
+            }
+        });
+
+        async function processVideo() {
+            if (!isTracking) return;
+
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const frame = cv.imread(canvas);
+            const gray = new cv.Mat();
+            cv.cvtColor(frame, gray, cv.COLOR_RGBA2GRAY);
+
+            if (!prevGray) {
+                prevGray = gray.clone();
+                frame.delete();
+                gray.delete();
+                requestAnimationFrame(processVideo);
+                return;
+            }
+
+            const flow = new cv.Mat();
+            cv.calcOpticalFlowFarneback(prevGray, gray, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+
+            const hsv = new cv.Mat();
+            cv.cvtColor(frame, hsv, cv.COLOR_RGB2HSV);
+            const lowerRed1 = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [0, 100, 100, 0]);
+            const upperRed1 = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [10, 255, 255, 255]);
+            const lowerRed2 = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [160, 100, 100, 0]);
+            const upperRed2 = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [180, 255, 255, 255]);
+            const mask1 = new cv.Mat();
+            const mask2 = new cv.Mat();
+            cv.inRange(hsv, lowerRed1, upperRed1, mask1);
+            cv.inRange(hsv, lowerRed2, upperRed2, mask2);
+            const mask = new cv.Mat();
+            cv.bitwise_or(mask1, mask2, mask);
+
+            const contours = new cv.MatVector();
+            const hierarchy = new cv.Mat();
+            cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+            let ballDetected = false;
+            for (let i = 0; i < contours.size(); i++) {
+                const contour = contours.get(i);
+                const area = cv.contourArea(contour);
+                if (area > 50) { 
+                    const rect = cv.boundingRect(contour);
+                    const centerX = rect.x + rect.width / 2;
+                    const centerY = rect.y + rect.height / 2;
+                    const flowX = flow.data32F[2 * (centerY * flow.cols + centerX)];
+                    const flowY = flow.data32F[2 * (centerY * flow.cols + centerX) + 1];
+                    const magnitude = Math.sqrt(flowX * flowX + flowY * flowY);
+                    if (magnitude > 2) { 
+                        ballPosition = { x: centerX, y: centerY };
+                        trajectory.push(ballPosition);
+                        ballDetected = true;
+
+                        context.strokeStyle = 'red';
+                        context.lineWidth = 2;
+                        context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+
+                        context.beginPath();
+                        context.strokeStyle = 'blue';
+                        context.lineWidth = 1;
+                        for (let j = 1; j < trajectory.length; j++) {
+                            context.moveTo(trajectory[j - 1].x, trajectory[j - 1].y);
+                            context.lineTo(trajectory[j].x, trajectory[j].y);
+                        }
+                        context.stroke();
+
+                        if (trajectory.length >= 2) {
+                            const dx = trajectory[1].x - trajectory[0].x;
+                            const dy = -(trajectory[1].y - trajectory[0].y);
+                            launchAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+                            if (launchAngle < 0) launchAngle += 360;
+                            context.fillStyle = 'black';
+                            context.font = '16px Arial';
+                            context.fillText(`Angle: ${launchAngle.toFixed(1)}°`, 10, 30);
+                        }
+                        break;
+                    }
+                }
+            }
+            prevGray.delete();
+            prevGray = gray.clone();
+
+            frame.delete();
+            gray.delete();
+            flow.delete();
+            hsv.delete();
+            lowerRed1.delete();
+            upperRed1.delete();
+            lowerRed2.delete();
+            upperRed2.delete();
+            mask1.delete();
+            mask2.delete();
+            mask.delete();
+            contours.delete();
+            hierarchy.delete();
+
+            if (!ballDetected && trajectory.length === 0) {
+                result.textContent = 'Range: Ball not detected';
+            }
+
+            requestAnimationFrame(processVideo);
+        }
+        function calculateRange() {
+            const batsmanHeight = parseFloat(batsmanHeightInput.value);
+            const waistToHeadPixels = parseFloat(waistToHeadPixelsInput.value);
+            if (!batsmanHeight || batsmanHeight <= 0 || !waistToHeadPixels || waistToHeadPixels <= 0) {
+                result.textContent = 'Range: Please enter valid batsman height and waist-to-head pixels';
+                return;
+            }
+            if (trajectory.length < 2) {
+                result.textContent = 'Range: Not enough points detected';
+                return;
+            }
+
+            const fullHeightPixels = waistToHeadPixels / 0.45;
+
+            const metersPerPixel = batsmanHeight / fullHeightPixels;
+            const dx = (trajectory[1].x - trajectory[0].x) * metersPerPixel;
+            const dy = -(trajectory[1].y - trajectory[0].y) * metersPerPixel; 
+            const pixelDistance = Math.sqrt(Math.pow(trajectory[1].x - trajectory[0].x, 2) + Math.pow(trajectory[1].y - trajectory[0].y, 2));
+            const distanceMeters = pixelDistance * metersPerPixel;
+            const fps = 30; 
+            const initialVelocity = distanceMeters * fps; 
+
+            const g = 9.81; 
+            const theta = launchAngle * (Math.PI / 180); 
+            const vx = initialVelocity * Math.cos(theta);
+            const vy = initialVelocity * Math.sin(theta);
+
+            const windSpeed = (Math.random() * 10 - 5);
+            const effectiveVx = vx + windSpeed;
+
+            const tPeak = vy / g;
+            const totalTime = 2 * tPeak;
+            let range = effectiveVx * totalTime;
+
+            if (range < 0) range = 0;
+
+            result.textContent = `Range: ${range.toFixed(2)} meters (Wind: ${windSpeed.toFixed(1)} m/s)`;
+        }
+
+        trackButton.addEventListener('click', () => {
+            isTracking = !isTracking;
+            trackButton.textContent = isTracking ? 'Stop Tracking' : 'Track Ball';
+            if (isTracking) {
+                if (typeof cv === 'undefined' || !cv.Mat) {
+                    result.textContent = 'Range: OpenCV.js not loaded';
+                    isTracking = false;
+                    trackButton.textContent = 'Track Ball';
+                    return;
+                }
+                requestAnimationFrame(processVideo);
+            } else {
+                calculateRange();
+            }
+        });
+        resetButton.addEventListener('click', () => {
+            isTracking = false;
+            trajectory = [];
+            if (prevGray) {
+                prevGray.delete();
+                prevGray = null;
+            }
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            result.textContent = 'Range: Not calculated';
+            trackButton.textContent = 'Track Ball';
+            video.currentTime = 0;
+            video.playbackRate = 0.25; 
+            batsmanHeightInput.value = '';
+            waistToHeadPixelsInput.value = '';
+        });
+        window.onload = () => {
+            if (typeof cv === 'undefined') {
+                result.textContent = 'Range: OpenCV.js failed to load';
+            }
+        };
+    </script>
+</body>
+</html>

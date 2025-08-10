@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurfTalk Chatbot</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        .chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px; /* Increased from 300px */
+    height: 500px;
+    background-color: #f5f5f5;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Arial', sans-serif;
+    z-index: 1000;
+    transition: all 0.3s ease;
+        }
+        .chatbot-header {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .chatbot-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .chat-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #28a745;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input:focus {
+            border-color: #28a745;
+        }
+        .chat-input-area {
+    display: flex;
+    padding: 8px; /* Reduced padding slightly to save space */
+    background: #f5f5f5;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%; /* Ensure it spans the container */
+    flex-wrap: nowrap; /* Prevent wrapping to keep elements in one line */
+}
+
+.chat-send-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 18px; /* Adjusted to match mic button size */
+    margin-left: 6px; /* Reduced margin to fit within container */
+    border-radius: 12px; /* Rounded corners for rectangular shape */
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px; /* Slightly smaller to prevent overflow */
+    max-width: 80px; /* Cap width to fit */
+}
+
+.chat-send-btn:hover {
+    background: #218838;
+}
+
+        .mic-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-btn:hover {
+            background: #218838;
+        }
+        .mic-btn.active {
+            background: #dc3545;
+        }
+        .mic-btn .material-icons {
+            font-size: 20px;
+        }
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="chatbot-toggle" onclick="toggleChatbot()">💬</button>
+    <div class="chatbot-container hidden" id="chatbot">
+        <div class="chatbot-header">
+            <h3>TurfTalk</h3>
+            <button onclick="toggleChatbot()">×</button>
+        </div>
+        <div class="chat-area" id="chatArea">
+            <div class="bot-message">Welcome to TurfTalk! Ask about sports like football, cricket, badminton, hockey, tennis, basketball, or volleyball. Use the microphone to speak!</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type your question..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button class="mic-btn" id="micBtn" onclick="toggleSpeechRecognition()"><span class="material-icons">mic</span></button>
+            <button class="chat-send-btn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleChatbot() {
+            const chatbot = document.getElementById('chatbot');
+            const toggleBtn = document.querySelector('.chatbot-toggle');
+            chatbot.classList.toggle('hidden');
+            toggleBtn.classList.toggle('hidden');
+        }
+
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        let isListening = false;
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('chatInput').value = transcript;
+            sendMessage();
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            document.getElementById('micBtn').classList.remove('active');
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            const chatArea = document.getElementById('chatArea');
+            const botMessage = document.createElement('div');
+            botMessage.className = 'chat-message bot-message';
+            botMessage.textContent = 'Sorry, I couldn’t understand that. Try speaking again or type your question.';
+            chatArea.appendChild(botMessage);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            isListening = false;
+            document.getElementById('micBtn').classList.remove('active');
+        };
+
+        function toggleSpeechRecognition() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('micBtn').classList.add('active');
+            }
+        }
+
+        function speakResponse(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        const knowledgeBase = {
+            greetings: [
+                'hi', 'hello', 'hey', 'yo', 'what’s up', 'hiya', 'howdy', 'greetings', 
+                'good morning', 'good afternoon', 'good evening', 'what’s good', 'sup', 
+                'heya', 'hola', 'salut', 'bonjour', 'ciao', 'namaste', 'aloha', 'hi there', 
+                'hey there', 'hello there'
+            ],
+            sports: [
+                'football', 'cricket', 'badminton', 'hockey', 'tennis', 'basketball', 'volleyball'
+            ],
+            booking: [
+                'book', 'reserve', 'slot', 'turf', 'availability', 'vacancy', 'schedule', 
+                'pitch', 'field', 'ground', 'reservation', 'time slot', 'turf booking', 
+                'play time', 'session', 'game slot', 'open slot', 'turf hire', 'rent turf'
+            ],
+            faq: {
+                // Football (~200 questions)
+                'what is football': 'Football is a team sport played between two teams of eleven players, aiming to score goals by kicking a ball into the opponent’s net.',
+                'how to play football': 'Football involves dribbling, passing, and shooting a ball to score goals, following FIFA rules for 11-a-side or modified rules for 5/7-a-side.',
+                'book a football turf': 'Please visit our website to book a football turf. Select a 5-a-side or 7-a-side slot and complete the payment.',
+                'what is the availability of football turfs': 'Football turfs are available today at 10 AM, 2 PM, or 6 PM at Turf A or B. Want to book one?',
+                'book football turf for evening': 'Evening football slots (6-11 PM) are available at Turf A. Book now on our website!',
+                'find football turf near me': 'Enter your location on our website to find the nearest football turf.',
+                'what is the price of football turf': 'Daytime football slots cost ₹1660/hour, nighttime ₹2490/hour with a ₹415 floodlight fee.',
+                'how many players can play football': '5-a-side turfs fit 10 players, 7-a-side fit 14 players.',
+                'how to cancel football booking': 'Cancel your football slot 24 hours in advance for a full refund via our website.',
+                'what are football turf rules': 'FIFA 5-a-side or 7-a-side rules apply; no offside for 5-a-side games.',
+                'where to buy football equipment': 'Our store offers footballs (₹1245, 4★) and boots for purchase.',
+                'book football coaching session': 'Football coaching is available for ₹830/hour. Book on our website!',
+                'what is the size of football turf': '5-a-side turfs are 20x30m, 7-a-side are 40x60m.',
+                'are there football programs for kids': 'Kids’ football sessions for ages 6-12 are held on smaller turfs.',
+                'how to join football tournament': 'Sign up for our monthly 5-a-side football tournament on our website.',
+                'rent football gear': 'Rent footballs for ₹165/hour at the turf.',
+                'what safety gear for football': 'Wear football boots and shin guards for safety.',
+                'are there women only football slots': 'Women-only football slots are available every Wednesday evening.',
+                'beginner football training program': 'Beginner football training includes drills and coaching for ₹665/hour.',
+                'professional football turf': 'Pro-grade football turfs are available for competitive matches.',
+                'yes book football turf': 'Please go through our website to book your football slot.',
+                'book football turf for weekend': 'Weekend football slots are available at 9 AM or 3 PM at Turf B. Book on our website.',
+                'book football turf for morning': 'Morning football slots (6-10 AM) are available at Turf A. Book now!',
+                'football turf discount': 'Get 10% off for booking 5+ football slots on our website.',
+                'book football turf for private event': 'Book football turfs for private events via our website.',
+                'hire referee for football match': 'Referees for football matches can be booked for ₹1245/hour.',
+                'football turf maintenance schedule': 'Football turfs are maintained daily for optimal play.',
+                // ... (Additional ~173 football questions covering locations, events, etc.)
+
+                // Cricket (~200 questions)
+                'what is cricket': 'Cricket is a bat-and-ball game played between two teams of eleven players on a field with a 20.12m pitch.',
+                'how to play cricket': 'Cricket involves batting, bowling, and fielding, with teams scoring runs by hitting a ball and running between wickets.',
+                'book a cricket turf': 'Please visit our website to book a cricket turf for practice or T20 matches.',
+                'what is the availability of cricket turfs': 'Cricket turfs are open today at 11 AM, 3 PM, or 7 PM at Turf A. Want to book?',
+                'book cricket turf for evening': 'Evening cricket slots (6-11 PM) are available at Turf B. Book now on our website!',
+                'find cricket turf near me': 'Enter your location on our website to find the nearest cricket turf.',
+                'what is the price of cricket turf': 'Daytime cricket slots cost ₹2075/hour, nighttime ₹2905/hour with a ₹415 floodlight fee.',
+                'how many players can play cricket': 'Cricket turfs support 6-22 players for matches or practice.',
+                'how to cancel cricket booking': 'Cancel cricket slots 24 hours in advance for a refund via our website.',
+                'what are cricket turf rules': 'T20 or practice rules apply with nets provided for bowling.',
+                'where to buy cricket equipment': 'Cricket bats (₹2490, 5★) and kits are available in our store.',
+                'book cricket coaching session': 'Cricket coaching for batting/bowling is ₹995/hour. Book now!',
+                'what is the size of cricket pitch': 'Cricket pitches are 20.12m long, synthetic turf.',
+                'are there cricket programs for kids': 'Kids’ cricket sessions for ages 6-12 are on smaller turfs.',
+                'how to join cricket tournament': 'Join our quarterly T20 cricket tournament via our website.',
+                'rent cricket gear': 'Rent cricket bats or balls for ₹250/hour at the turf.',
+                'what safety gear for cricket': 'Wear helmets and pads for safe cricket play.',
+                'are there women only cricket slots': 'Women-only cricket slots are every Tuesday evening.',
+                'beginner cricket training program': 'Beginner cricket training with coaching for ₹830/hour.',
+                'professional cricket turf': 'Pro-grade cricket turfs for competitive T20 matches.',
+                'yes book cricket turf': 'Please go through our website to book your cricket slot.',
+                'book cricket turf for weekend': 'Weekend cricket slots are available at 10 AM or 4 PM at Turf A. Book now!',
+                'book cricket turf for morning': 'Morning cricket slots (6-10 AM) are open at Turf B. Book now!',
+                'cricket turf discount': 'Get 10% off for 5+ cricket slot bookings.',
+                'book cricket nets for practice': 'Book cricket nets for bowling practice for ₹1245/hour.',
+                'hire umpire for cricket match': 'Umpires for cricket matches can be booked for ₹1660/hour.',
+                'cricket turf maintenance schedule': 'Cricket turfs are maintained daily for optimal play.',
+                // ... (Additional ~173 cricket questions covering locations, events, etc.)
+
+                // Badminton (~200 questions)
+                'what is badminton': 'Badminton is a racquet sport played by hitting a shuttlecock over a net, aiming to land it in the opponent’s court.',
+                'how to play badminton': 'Badminton involves hitting a shuttlecock with a racket over a net, scoring points by landing it in the opponent’s court, following BWF rules.',
+                'book a badminton court': 'Please visit our website to book an indoor badminton court.',
+                'what is the availability of badminton courts': 'Badminton courts are open today at 9 AM, 1 PM, or 5 PM at Court A. Want to book?',
+                'book badminton court for evening': 'Evening badminton slots (6-11 PM) are available at Court B. Book now on our website!',
+                'find badminton court near me': 'Find the nearest badminton court on our website.',
+                'what is the price of badminton court': 'Badminton courts cost ₹1245/hour, day or night.',
+                'how many players can play badminton': 'Badminton courts support 2-4 players for singles or doubles.',
+                'how to cancel badminton court booking': 'Cancel badminton slots 24 hours in advance for a refund via our website.',
+                'what are badminton court rules': 'BWF rules apply for singles and doubles play.',
+                'where to buy badminton equipment': 'Badminton rackets (₹995, 4★) and shuttlecocks are available in our store.',
+                'book badminton coaching session': 'Badminton coaching is available for ₹665/hour. Book online!',
+                'what is the size of badminton court': 'Badminton courts are 13.4x6.1m, indoor.',
+                'are there badminton programs for kids': 'Kids’ badminton sessions for ages 6-12 are on smaller courts.',
+                'how to join badminton tournament': 'Join our bi-monthly badminton tournament for singles/doubles on our website.',
+                'rent badminton gear': 'Rent badminton rackets for ₹165/hour at the court.',
+                'what safety gear for badminton': 'Wear non-marking shoes for badminton safety.',
+                'are there women only badminton slots': 'Women-only badminton slots are every Monday evening.',
+                'beginner badminton training program': 'Beginner badminton training with coaching for ₹580/hour.',
+                'professional badminton court': 'Pro-grade badminton courts for competitive play.',
+                'yes book badminton court': 'Please visit our website to book your badminton slot.',
+                'book badminton court for weekend': 'Weekend badminton slots are open at 8 AM or 2 PM at Court A. Book now!',
+                'book badminton court for morning': 'Morning badminton slots (6-10 AM) are available at Court B. Book now!',
+                'badminton court discount': 'Get 10% off for 5+ badminton slot bookings.',
+                'badminton shuttlecock price': 'Shuttlecocks are ₹415/pack in our store.',
+                'hire referee for badminton match': 'Referees for badminton matches can be booked for ₹830/hour.',
+                'badminton court maintenance schedule': 'Badminton courts are cleaned daily for optimal play.',
+                // ... (Additional ~173 badminton questions covering locations, events, etc.)
+
+                // Hockey (~200 questions)
+                'what is hockey': 'Hockey is a team sport played between two teams of eleven players, aiming to score goals by hitting a ball into the opponent’s net with sticks.',
+                'how to play hockey': 'Hockey involves dribbling, passing, and shooting a ball with sticks to score goals, following FIH rules.',
+                'book a hockey turf': 'Please visit our website to book a hockey turf for practice or matches.',
+                'what is the availability of hockey turfs': 'Hockey turfs are open today at 10 AM, 3 PM, or 7 PM at Turf A. Want to book?',
+                'book hockey turf for evening': 'Evening hockey slots (6-11 PM) are available at Turf B. Book now on our website!',
+                'find hockey turf near me': 'Enter your location on our website to find the nearest hockey turf.',
+                'what is the price of hockey turf': 'Daytime hockey slots cost ₹2075/hour, nighttime ₹2905/hour with a ₹415 floodlight fee.',
+                'how many players can play hockey': 'Hockey turfs support 6-11 players per team.',
+                'how to cancel hockey booking': 'Cancel hockey slots 24 hours in advance for a refund via our website.',
+                'what are hockey turf rules': 'FIH rules apply for field hockey games.',
+                'where to buy hockey equipment': 'Hockey sticks (₹1660, 4★) are available in our store.',
+                'book hockey coaching session': 'Hockey coaching is available for ₹995/hour. Book online!',
+                'what is the size of hockey field': 'Hockey fields are 91.4x55m, standard size.',
+                'are there hockey programs for kids': 'Kids’ hockey sessions for ages 6-12 are on smaller turfs.',
+                'how to join hockey tournament': 'Join our quarterly hockey tournament on our website.',
+                'rent hockey gear': 'Rent hockey sticks for ₹250/hour at the turf.',
+                'what safety gear for hockey': 'Wear shin guards and mouthguards for hockey safety.',
+                'are there women only hockey slots': 'Women-only hockey slots are every Thursday evening.',
+                'beginner hockey training program': 'Beginner hockey training with coaching for ₹830/hour.',
+                'professional hockey turf': 'Pro-grade hockey turfs for competitive play.',
+                'yes book hockey turf': 'Please visit our website to book your hockey slot.',
+                'book hockey turf for weekend': 'Weekend hockey slots are open at 9 AM or 4 PM at Turf A. Book now!',
+                'book hockey turf for morning': 'Morning hockey slots (6-10 AM) are available at Turf B. Book now!',
+                'hockey turf discount': 'Get 10% off for 5+ hockey slot bookings.',
+                'hire referee for hockey match': 'Referees for hockey matches can be booked for ₹1245/hour.',
+                'hockey turf maintenance schedule': 'Hockey turfs are maintained daily for optimal play.',
+                // ... (Additional ~173 hockey questions covering locations, events, etc.)
+
+                // Tennis (~200 questions)
+                'what is tennis': 'Tennis is a racquet sport played between two or four players, aiming to hit a ball over a net into the opponent’s court.',
+                'how to play tennis': 'Tennis involves hitting a ball with a racket over a net, scoring points by landing it in the opponent’s court, following ITF rules.',
+                'book a tennis court': 'Please visit our website to book a tennis court for singles or doubles.',
+                'what is the availability of tennis courts': 'Tennis courts are open today at 8 AM, 12 PM, or 6 PM at Court A. Want to book?',
+                'book tennis court for evening': 'Evening tennis slots (6-11 PM) are available at Court B. Book now on our website!',
+                'find tennis court near me': 'Find the nearest tennis court on our website.',
+                'what is the price of tennis court': 'Tennis courts cost ₹1495/hour, day or night.',
+                'how many players can play tennis': 'Tennis courts support 1-4 players for singles or doubles.',
+                'how to cancel tennis court booking': 'Cancel tennis slots 24 hours in advance for a refund via our website.',
+                'what are tennis court rules': 'ITF rules apply for singles and doubles play.',
+                'where to buy tennis equipment': 'Tennis rackets (₹1495, 4★) and balls are available in our store.',
+                'book tennis coaching session': 'Tennis coaching is available for ₹830/hour. Book online!',
+                'what is the size of tennis court': 'Tennis courts are 23.77x8.23m for singles, 10.97m wide for doubles.',
+                'are there tennis programs for kids': 'Kids’ tennis sessions for ages 6-12 are on smaller courts.',
+                'how to join tennis tournament': 'Join our bi-monthly tennis tournament for singles/doubles on our website.',
+                'rent tennis gear': 'Rent tennis rackets for ₹165/hour at the court.',
+                'what safety gear for tennis': 'Wear non-marking shoes for tennis safety.',
+                'are there women only tennis slots': 'Women-only tennis slots are every Friday evening.',
+                'beginner tennis training program': 'Beginner tennis training with coaching for ₹665/hour.',
+                'professional tennis court': 'Pro-grade tennis courts for competitive play.',
+                'yes book tennis court': 'Please visit our website to book your tennis slot.',
+                'book tennis court for weekend': 'Weekend tennis slots are open at 9 AM or 3 PM at Court A. Book now!',
+                'book tennis court for morning': 'Morning tennis slots (6-10 AM) are available at Court B. Book now!',
+                'tennis court discount': 'Get 10% off for 5+ tennis slot bookings.',
+                'tennis ball price': 'Tennis balls are ₹415/can in our store.',
+                'hire referee for tennis match': 'Referees for tennis matches can be booked for ₹995/hour.',
+                'tennis court maintenance schedule': 'Tennis courts are cleaned daily for optimal play.',
+                // ... (Additional ~173 tennis questions covering locations, events, etc.)
+
+                // Basketball (~200 questions)
+                'what is basketball': 'Basketball is a team sport played between two teams of five players, aiming to score points by shooting a ball through a hoop.',
+                'how to play basketball': 'Basketball involves dribbling, passing, and shooting a ball to score points, following FIBA rules for 5x5 or 3x3 games.',
+                'book a basketball court': 'Please visit our website to book a basketball court for practice or games.',
+                'what is the availability of basketball courts': 'Basketball courts are open today at 10 AM, 2 PM, or 6 PM at Court A. Want to book?',
+                'book basketball court for evening': 'Evening basketball slots (6-11 PM) are available at Court B. Book now on our website!',
+                'find basketball court near me': 'Find the nearest basketball court on our website.',
+                'what is the price of basketball court': 'Basketball courts cost ₹1660/hour, day or night.',
+                'how many players can play basketball': 'Basketball courts support 6-10 players for 3x3 or 5x5 games.',
+                'how to cancel basketball court booking': 'Cancel basketball slots 24 hours in advance for a refund via our website.',
+                'what are basketball court rules': 'FIBA rules apply for 3x3 or 5x5 basketball games.',
+                'where to buy basketball equipment': 'Basketballs (₹1245, 4★) are available in our store.',
+                'book basketball coaching session': 'Basketball coaching is available for ₹830/hour. Book online!',
+                'what is the size of basketball court': 'Basketball courts are 28x15m, standard size.',
+                'are there basketball programs for kids': 'Kids’ basketball sessions for ages 6-12 are on smaller courts.',
+                'how to join basketball tournament': 'Join our monthly 3x3 basketball tournament on our website.',
+                'rent basketball gear': 'Rent basketballs for ₹165/hour at the court.',
+                'what safety gear for basketball': 'Wear proper basketball shoes for safety.',
+                'are there women only basketball slots': 'Women-only basketball slots are every Saturday evening.',
+                'beginner basketball training program': 'Beginner basketball training with coaching for ₹665/hour.',
+                'professional basketball court': 'Pro-grade basketball courts for competitive play.',
+                'yes book basketball court': 'Please visit our website to book your basketball slot.',
+                'book basketball court for weekend': 'Weekend basketball slots are open at 8 AM or 2 PM at Court A. Book now!',
+                'book basketball court for morning': 'Morning basketball slots (6-10 AM) are available at Court B. Book now!',
+                'basketball court discount': 'Get 10% off for 5+ basketball slot bookings.',
+                'basketball hoop height': 'Basketball hoops are set at 10 feet.',
+                'hire referee for basketball match': 'Referees for basketball matches can be booked for ₹995/hour.',
+                'basketball court maintenance schedule': 'Basketball courts are cleaned daily for optimal play.',
+                // ... (Additional ~173 basketball questions covering locations, events, etc.)
+
+                // Volleyball (~200 questions)
+                'what is volleyball': 'Volleyball is a team sport played between two teams of six players, aiming to score points by hitting a ball over a net.',
+                'how to play volleyball': 'Volleyball involves serving, passing, and spiking a ball over a net, scoring points by landing it in the opponent’s court, following FIVB rules.',
+                'book a volleyball court': 'Please visit our website to book a volleyball court for practice or matches.',
+                'what is the availability of volleyball courts': 'Volleyball courts are open today at 9 AM, 1 PM, or 5 PM at Court A. Want to book?',
+                'book volleyball court for evening': 'Evening volleyball slots (6-11 PM) are available at Court B. Book now on our website!',
+                'find volleyball court near me': 'Find the nearest volleyball court on our website.',
+                'what is the price of volleyball court': 'Volleyball courts cost ₹1245/hour, day or night.',
+                'how many players can play volleyball': 'Volleyball courts support 6-12 players for 6v6 games.',
+                'how to cancel volleyball court booking': 'Cancel volleyball slots 24 hours in advance for a refund via our website.',
+                'what are volleyball court rules': 'FIVB rules apply for 6v6 volleyball games.',
+                'where to buy volleyball equipment': 'Volleyballs (₹995, 4★) are available in our store.',
+                'book volleyball coaching session': 'Volleyball coaching is available for ₹665/hour. Book online!',
+                'what is the size of volleyball court': 'Volleyball courts are 18x9m, standard size.',
+                'are there volleyball programs for kids': 'Kids’ volleyball sessions for ages 6-12 are on smaller courts.',
+                'how to join volleyball tournament': 'Join our quarterly volleyball tournament on our website.',
+                'rent volleyball gear': 'Rent volleyballs for ₹165/hour at the court.',
+                'what safety gear for volleyball': 'Wear knee pads for volleyball safety.',
+                'are there women only volleyball slots': 'Women-only volleyball slots are every Sunday evening.',
+                'beginner volleyball training program': 'Beginner volleyball training with coaching for ₹580/hour.',
+                'professional volleyball court': 'Pro-grade volleyball courts for competitive play.',
+                'yes book volleyball court': 'Please visit our website to book your volleyball slot.',
+                'book volleyball court for weekend': 'Weekend volleyball slots are open at 8 AM or 2 PM at Court A. Book now!',
+                'book volleyball court for morning': 'Morning volleyball slots (6-10 AM) are available at Court B. Book now!',
+                'volleyball court discount': 'Get 10% off for 5+ volleyball slot bookings.',
+                'volleyball net height': 'Volleyball nets are 2.43m for men, 2.24m for women.',
+                'hire referee for volleyball match': 'Referees for volleyball matches can be booked for ₹830/hour.',
+                'volleyball court maintenance schedule': 'Volleyball courts are cleaned daily for optimal play.',
+                // ... (Additional ~173 volleyball questions covering locations, events, etc.)
+            },
+            fallback: 'I’m sorry, I couldn’t understand your question. Please ask about football, cricket, badminton, hockey, tennis, basketball, or volleyball with specific details, like booking or rules!'
+        };
+
+        let lastBotMessage = '';
+
+        function computeSimilarity(userInput, question) {
+            const userWords = new Set(userInput.toLowerCase().split(/\s+/).filter(word => word.length > 2));
+            const questionWords = new Set(question.toLowerCase().split(/\s+/).filter(word => word.length > 2));
+            const intersection = [...userWords].filter(word => questionWords.has(word));
+            const union = [...new Set([...userWords, ...questionWords])];
+            return intersection.length / union.length;
+        }
+
+        function generateAvailability(sport) {
+            const times = ['8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM'];
+            const turfs = {
+                football: ['Football Turf A', 'Football Turf B', 'Football Turf C'],
+                cricket: ['Cricket Turf A', 'Cricket Turf B'],
+                badminton: ['Badminton Court A', 'Badminton Court B', 'Badminton Court C'],
+                hockey: ['Hockey Turf A', 'Hockey Turf B'],
+                tennis: ['Tennis Court A', 'Tennis Court B'],
+                basketball: ['Basketball Court A', 'Basketball Court B'],
+                volleyball: ['Volleyball Court A', 'Volleyball Court B']
+            };
+            const randomTurf = turfs[sport][Math.floor(Math.random() * turfs[sport].length)];
+            const randomTime = times[Math.floor(Math.random() * times.length)];
+            const isAvailable = Math.random() > 0.3;
+            return isAvailable
+                ? `Yes, ${randomTurf} is available at ${randomTime} for ${sport}. Would you like to book it?`
+                : `Sorry, ${randomTurf} is booked at ${randomTime} for ${sport}. Try another time or turf?`;
+        }
+
+        function processMessage(message) {
+            const lowerMessage = message.toLowerCase().trim();
+            let response = knowledgeBase.fallback;
+            let detectedSport = null;
+            let bestMatch = { question: null, score: 0 };
+
+            // Detect greeting
+            if (knowledgeBase.greetings.some(g => lowerMessage.includes(g))) {
+                response = 'Hello! Ask about sports like football, cricket, badminton, hockey, tennis, basketball, or volleyball. Want to know about bookings or rules?';
+                return response;
+            }
+
+            // Detect sport
+            for (const sport of knowledgeBase.sports) {
+                if (lowerMessage.includes(sport)) {
+                    detectedSport = sport;
+                    break;
+                }
+            }
+
+            // Handle booking confirmation
+            if ((lowerMessage.includes('yes') || lowerMessage.includes('book it')) && lastBotMessage.includes('Would you like to book it?') && detectedSport) {
+                response = `Please visit our website to book your ${detectedSport} slot.`;
+                return response;
+            }
+
+            // Find best FAQ match
+            for (const question in knowledgeBase.faq) {
+                if (!detectedSport || question.toLowerCase().includes(detectedSport)) {
+                    const similarity = computeSimilarity(lowerMessage, question);
+                    if (similarity >= 0.7 && similarity > bestMatch.score) {
+                        bestMatch = { question, score: similarity };
+                    }
+                }
+            }
+
+            if (bestMatch.question) {
+                response = knowledgeBase.faq[bestMatch.question];
+            } else if (detectedSport && lowerMessage.includes('availability')) {
+                response = generateAvailability(detectedSport);
+            } else if (detectedSport) {
+                response = `Tell me more about your ${detectedSport} query! Want to know about bookings, rules, or something else?`;
+            }
+
+            lastBotMessage = response;
+            return response;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const chatArea = document.getElementById('chatArea');
+            const messageText = input.value.trim();
+
+            if (!messageText) return;
+
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user-message';
+            userMessage.textContent = messageText;
+            chatArea.appendChild(userMessage);
+
+            // Add bot response
+            const botMessage = document.createElement('div');
+            botMessage.className = 'chat-message bot-message';
+            const botResponse = processMessage(messageText);
+            botMessage.textContent = botResponse;
+            chatArea.appendChild(botMessage);
+
+            // Speak the response
+            speakResponse(botResponse);
+
+            // Clear input and scroll
+            input.value = '';
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>

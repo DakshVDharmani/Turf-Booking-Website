@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Shop - Turf Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-color: #1a2a24;
+            --bg-light: #e6f4e6;
+            --bg-dark: #1a3c34;
+            --text-white: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-light: var(--bg-dark);
+            --text-color: var(--text-white);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-color);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: var(--text-white);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--text-white);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: translateY(-50%) rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .content-wrapper {
+            transition: transform 0.4s ease;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            transform: translateX(300px);
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1517649765268-fb10c0c2fe6d') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        .shop-now-btn {
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .shop-now-btn:hover {
+            background: var(--accent-green);
+            transform: scale(1.05);
+        }
+
+        .view-cart, .toggle-dark {
+            position: absolute;
+            top: 20px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            z-index: 2;
+            background: var(--light-green);
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        body.dark-mode .view-cart, body.dark-mode .toggle-dark {
+            background: var(--dark-green);
+            color: var(--text-color);
+        }
+
+        .view-cart { right: 20px; }
+        .toggle-dark { left: 20px; }
+        .view-cart:hover, .toggle-dark:hover { background: var(--accent-green); }
+
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        .search-bar input {
+            padding: 0.8rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 10px;
+            font-size: 1rem;
+            flex: 1;
+            transition: border-color 0.3s ease;
+            color: var(--text-color);
+            background: var(--bg-light);
+        }
+
+        body.dark-mode .search-bar input {
+            background: var(--bg-dark);
+        }
+
+        .search-bar input:focus {
+            border-color: var(--primary-green);
+            outline: none;
+        }
+
+        .search-bar button {
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-bar button:hover {
+            background: var(--accent-green);
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem auto;
+            flex-wrap: wrap;
+            max-width: 1200px;
+        }
+
+        .filters select {
+            padding: 0.8rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            min-width: 150px;
+            color: var(--text-color);
+            background: var(--bg-light);
+        }
+
+        body.dark-mode .filters select {
+            background: var(--bg-dark);
+        }
+
+        .filters select:focus {
+            border-color: var(--primary-green);
+            outline: none;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: var(--bg-light);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-card img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .product-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 1rem 0 0.5rem;
+            color: var(--text-color);
+        }
+
+        .product-card p {
+            font-size: 1rem;
+            color: var(--text-color);
+            margin: 0.5rem 0;
+        }
+
+        .product-card .rating {
+            color: gold;
+            font-size: 1.2rem;
+        }
+
+        .product-card .actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cart-icon, .wishlist-icon {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-green);
+            transition: color 0.3s ease;
+        }
+
+        .cart-icon:hover, .wishlist-icon:hover {
+            color: var(--accent-green);
+        }
+
+        .quantity-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .quantity-select input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 8px;
+            text-align: center;
+            color: var(--text-color);
+            background: var(--bg-light);
+        }
+
+        body.dark-mode .quantity-select input {
+            background: var(--bg-dark);
+        }
+
+        .rating-stars span {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: lightgray;
+            transition: color 0.3s ease;
+        }
+
+        .rating-stars span.checked {
+            color: gold;
+        }
+
+        .chatbot-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 340px;
+            height: 520px;
+            z-index: 1000;
+        }
+
+        .chatbot-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            z-index: 1002;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--text-white);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1.2rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: var(--text-white);
+        }
+
+        footer .social-icons a {
+            color: var(--text-white);
+            font-size: 1.8rem;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                transform: translateX(300px);
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                transform: translateX(300px);
+            }
+
+            .hero-content h1 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .products {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .chatbot-wrapper {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .chatbot-wrapper {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Turf Booking</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Cricket Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div class="chatbot-wrapper">
+        <iframe src="turftalk_chatbot.html" title="TurfTalk Chatbot"></iframe>
+    </div>
+    <a href="#" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <div class="content-wrapper">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Sports Store</h1>
+                <p>New Arrivals, Best Deals, and Top Brands!</p>
+                <button class="shop-now-btn" onclick="scrollToProducts()">Shop Now</button>
+                <a class="view-cart" href="cart.html" aria-label="View Cart"><i class="fas fa-shopping-cart"></i> View Cart</a>
+                <button class="toggle-dark" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            </div>
+        </section>
+        <section class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search products..." aria-label="Search products">
+            <button onclick="applyFilters()" aria-label="Search"><i class="fas fa-search"></i></button>
+        </section>
+        <section class="filters">
+            <select id="sportFilter" aria-label="Filter by sport">
+                <option value="">All Sports</option>
+                <option value="Cricket">Cricket</option>
+                <option value="Football">Football</option>
+                <option value="Badminton">Badminton</option>
+                <option value="Tennis">Tennis</option>
+                <option value="Basketball">Basketball</option>
+            </select>
+            <select id="priceFilter" aria-label="Filter by price">
+                <option value="">Any Price</option>
+                <option value="500">Up to ₹500</option>
+                <option value="1000">Up to ₹1000</option>
+                <option value="2000">Up to ₹2000</option>
+            </select>
+            <select id="ratingFilter" aria-label="Filter by rating">
+                <option value="">Any Rating</option>
+                <option value="3">3★ & above</option>
+                <option value="4">4★ & above</option>
+                <option value="5">5★ only</option>
+            </select>
+            <select id="sortFilter" aria-label="Sort products">
+                <option value="">Sort By</option>
+                <option value="priceLow">Price: Low to High</option>
+                <option value="priceHigh">Price: High to Low</option>
+                <option value="ratingHigh">Rating: High to Low</option>
+                <option value="nameAZ">Name: A-Z</option>
+            </select>
+        </section>
+        <section class="products" id="productsContainer"></section>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">© 2025 Turf Booking. All rights reserved.</p>
+        </footer>
+    </div>
+    <div id="toast" class="toast"></div>
+    <script>
+        const products = [
+            { name: "MRF Cricket Bat", sport: "Cricket", price: 1500, rating: 4, imageUrl: "assets/bat.png" },
+            { name: "Football Shoes", sport: "Football", price: 999, rating: 5, imageUrl: "assets/Nike Football Shoes.png" },
+            { name: "Yonex Badminton Racket", sport: "Badminton", price: 1200, rating: 4, imageUrl: "assets/yonex.png" },
+            { name: "Cricket Gloves", sport: "Cricket", price: 450, rating: 3, imageUrl: "assets/gloves.png" },
+            { name: "Adidas Football", sport: "Football", price: 800, rating: 4, imageUrl: "assets/adidas football.png" },
+            { name: "Badminton Shuttle Pack", sport: "Badminton", price: 300, rating: 3, imageUrl: "assets/shuttle.png" },
+            { name: "Cricket Helmet", sport: "Cricket", price: 1600, rating: 5, imageUrl: "assets/helmet.png" },
+            { name: "Tennis Racket", sport: "Tennis", price: 1300, rating: 4, imageUrl: "assets/tennis.png" },
+            { name: "Basketball Ball", sport: "Basketball", price: 700, rating: 4, imageUrl: "assets/basketball.png" },
+            { name: "Knee Guard", sport: "Cricket", price: 350, rating: 3, imageUrl: "assets/kneeguard.png" },
+            { name: "Cricket Pads", sport: "Cricket", price: 1100, rating: 4, imageUrl: "assets/pads.png" },
+            { name: "Tennis Balls (6-Pack)", sport: "Tennis", price: 500, rating: 5, imageUrl: "assets/tennisballs.png" },
+            { name: "Basketball Shoes", sport: "Basketball", price: 1800, rating: 5, imageUrl: "assets/basketshoes.png" },
+            { name: "Football Jersey", sport: "Football", price: 600, rating: 4, imageUrl: "assets/jersey.png" },
+            { name: "Badminton Net", sport: "Badminton", price: 700, rating: 3, imageUrl: "assets/net.png" },
+            { name: "Cricket Stumps Set", sport: "Cricket", price: 800, rating: 4, imageUrl: "assets/stumps.png" },
+            { name: "Sweat Band Set", sport: "Tennis", price: 250, rating: 3, imageUrl: "assets/sweatband.png" },
+            { name: "Sports Water Bottle", sport: "Football", price: 150, rating: 4, imageUrl: "assets/bottle.png" },
+            { name: "Basketball Jersey", sport: "Basketball", price: 750, rating: 4, imageUrl: "assets/bbjersey.png" }
+        ];
+
+        // Sidebar and navigation
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.querySelector('.content-wrapper');
+        const backToTop = document.querySelector('.back-to-top');
+
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            toggleSidebarBtn.classList.toggle('open');
+            contentWrapper.classList.toggle('sidebar-open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                sidebar.classList.remove('open');
+                toggleSidebarBtn.classList.remove('open');
+                contentWrapper.classList.remove('sidebar-open');
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            backToTop.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        // Particle animations
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = `${Math.random() * 5 + 2}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { transform: translateY(-20px); opacity: 0.8; }
+                100% { transform: translateY(0); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Scroll to products
+        function scrollToProducts() {
+            document.getElementById('productsContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Toast notifications
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Product display
+        function displayProducts(productList) {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            productList.forEach((product, index) => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.setAttribute('tabindex', '0');
+                card.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.sport}</p>
+                    <p><strong>₹${product.price}</strong></p>
+                    <p class="rating">${'★'.repeat(product.rating)}${'☆'.repeat(5 - product.rating)}</p>
+                    <div class="quantity-select">
+                        <label for="quantity-${index}" class="sr-only">Quantity</label>
+                        <input type="number" id="quantity-${index}" min="1" value="1" aria-label="Quantity for ${product.name}">
+                    </div>
+                    <div class="actions">
+                        <i class="fas fa-shopping-cart cart-icon" data-name="${product.name}" aria-label="Add ${product.name} to cart"></i>
+                        <i class="fas fa-heart wishlist-icon" data-name="${product.name}" aria-label="Add ${product.name} to wishlist"></i>
+                    </div>
+                    <div class="rating-stars" id="stars-${index}">
+                        ${Array.from({length: 5}, (_, i) => `<span ${i < product.rating ? 'class="checked"' : ''} data-index="${index}" data-rating="${i + 1}">★</span>`).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Event delegation for cart, wishlist, and rating
+        document.getElementById('productsContainer').addEventListener('click', (e) => {
+            if (e.target.classList.contains('cart-icon')) {
+                const name = e.target.dataset.name;
+                const quantity = parseInt(document.getElementById(`quantity-${products.findIndex(p => p.name === name)}`).value);
+                addToCart(name, quantity);
+            } else if (e.target.classList.contains('wishlist-icon')) {
+                const name = e.target.dataset.name;
+                addToWishlist(name);
+            } else if (e.target.tagName === 'SPAN' && e.target.parentElement.classList.contains('rating-stars')) {
+                const { index, rating } = e.target.dataset;
+                rateProduct(parseInt(index), parseInt(rating));
+            }
+        });
+
+        function rateProduct(index, rating) {
+            const stars = document.querySelectorAll(`#stars-${index} span`);
+            stars.forEach((star, i) => star.classList.toggle('checked', i < rating));
+            products[index].rating = rating;
+            applyFilters();
+        }
+
+        function addToCart(name, quantity) {
+            const product = products.find(p => p.name === name);
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existing = cart.find(item => item.name === name);
+            if (existing) {
+                existing.quantity = (existing.quantity || 1) + quantity;
+            } else {
+                cart.push({ ...product, quantity });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showToast(`${name} added to cart!`);
+        }
+
+        function addToWishlist(name) {
+            const product = products.find(p => p.name === name);
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            if (!wishlist.find(item => item.name === name)) {
+                wishlist.push(product);
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                showToast(`${name} added to wishlist!`);
+            } else {
+                showToast(`${name} already in wishlist!`);
+            }
+        }
+
+        // Filtering and sorting
+        function applyFilters() {
+            const sport = document.getElementById('sportFilter').value;
+            const price = parseInt(document.getElementById('priceFilter').value);
+            const rating = parseInt(document.getElementById('ratingFilter').value);
+            const sort = document.getElementById('sortFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = products.filter(p => 
+                (!sport || p.sport === sport) &&
+                (!price || p.price <= price) &&
+                (!rating || p.rating >= rating) &&
+                (!search || p.name.toLowerCase().includes(search))
+            );
+
+            if (sort === 'priceLow') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sort === 'priceHigh') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sort === 'ratingHigh') {
+                filtered.sort((a, b) => b.rating - a.rating);
+            } else if (sort === 'nameAZ') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            displayProducts(filtered);
+        }
+
+        // Real-time search with debounce
+        let debounceTimer;
+        document.getElementById('searchInput').addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 300);
+        });
+
+        // Initialize filters and products
+        document.querySelectorAll('.filters select').forEach(select => {
+            select.addEventListener('change', applyFilters);
+        });
+
+        displayProducts(products);
+    </script>
+</body>
+</html>

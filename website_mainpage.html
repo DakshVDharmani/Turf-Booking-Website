@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turf Booking - Your Premier Sports Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-dark: #1a2a24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--light-green);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particle Animation Background */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--light-green);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Toggle Button */
+        .toggle-btn {
+            position: fixed;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: translateY(-50%) rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Content Wrapper */
+        .content-wrapper {
+            transition: transform 0.4s ease;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            transform: translateX(300px);
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Hero Section with Parallax */
+        .hero {
+            background: url('https://images.unsplash.com/photo-1592499879835-8e29db2f2522') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h2 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-bottom: 2.5rem;
+            color: var(--light-green);
+            line-height: 1.6;
+        }
+
+        .hero-content .btn {
+            background: var(--accent-green);
+            color: var(--dark-green);
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-content .btn:hover {
+            background: var(--secondary-green);
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 5rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+        }
+
+        /* Section Styles */
+        section {
+            margin-bottom: 6rem;
+            padding: 4rem 2rem;
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--secondary-green);
+            border-radius: 2px;
+        }
+
+        section p {
+            font-size: 1.2rem;
+            color: #444;
+            line-height: 1.9;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Service Cards */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, var(--light-green), #fff);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border: 2px solid var(--secondary-green);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-card:nth-child(1) { animation-delay: 0.1s; }
+        .service-card:nth-child(2) { animation-delay: 0.2s; }
+        .service-card:nth-child(3) { animation-delay: 0.3s; }
+        .service-card:nth-child(4) { animation-delay: 0.4s; }
+        .service-card:nth-child(5) { animation-delay: 0.5s; }
+        .service-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .service-card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(106, 176, 76, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card i {
+            font-size: 3.5rem;
+            color: var(--secondary-green);
+            margin-bottom: 1.5rem;
+        }
+
+        .service-card h3 {
+            font-size: 1.9rem;
+            color: var(--primary-green);
+            margin-bottom: 1.2rem;
+        }
+
+        .service-card p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* Why Choose Us Section */
+        .why-choose-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .why-choose-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px dashed var(--accent-green);
+            transition: transform 0.3s ease;
+        }
+
+        .why-choose-card:hover {
+            transform: scale(1.05);
+        }
+
+        .why-choose-card i {
+            font-size: 2.5rem;
+            color: var(--secondary-green);
+            margin-bottom: 1rem;
+        }
+
+        .why-choose-card h3 {
+            font-size: 1.6rem;
+            color: var(--primary-green);
+        }
+
+        /* Stats Counter */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .stat-card {
+            background: var(--light-green);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            color: var(--secondary-green);
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        /* Quotes Section */
+        .quotes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .quote-card {
+            background: var(--light-green);
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 6px solid var(--secondary-green);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .quote-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .quote-card p {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: var(--primary-green);
+            margin-bottom: 1.2rem;
+        }
+
+        .quote-card span {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        /* Testimonials Section */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid var(--secondary-green);
+            transition: transform 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .testimonial-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            object-fit: cover;
+            border: 3px solid var(--accent-green);
+        }
+
+        .testimonial-card p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1.2rem;
+        }
+
+        .testimonial-card h4 {
+            font-size: 1.3rem;
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        /* Newsletter Section */
+        .newsletter {
+            background: linear-gradient(135deg, var(--light-green), #c0e0c0);
+            color: var(--text-dark);
+            padding: 4rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .newsletter h2 {
+            color: var(--primary-green);
+            font-size: 2.5rem;
+        }
+
+        .newsletter p {
+            color: #444;
+            font-size: 1.2rem;
+        }
+
+        .newsletter form {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .newsletter input {
+            padding: 1rem 2rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            color: var(--text-dark);
+        }
+
+        .newsletter button {
+            padding: 1rem 3rem;
+            background: var(--secondary-green);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .newsletter button:hover {
+            background: var(--accent-green);
+            transform: scale(1.05);
+        }
+
+        /* Chatbot Styles */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-toggle:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .chatbot-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .chatbot-toggle .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container.open {
+            display: flex;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1.2rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-icons a {
+            color: var(--light-green);
+            font-size: 1.8rem;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        /* Responsive Design */
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                transform: translateX(300px);
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                transform: translateX(300px);
+            }
+
+            .hero-content h2 {
+                font-size: 4.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 70vh;
+            }
+
+            .hero-content h2 {
+                font-size: 3rem;
+            }
+
+            .hero-content p {
+                font-size: 1.2rem;
+            }
+
+            section h2 {
+                font-size: 2.2rem;
+            }
+
+            .service-grid, .quotes-grid, .testimonial-grid, .why-choose-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 2.5rem;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .newsletter form {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .chatbot-container {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Turf Booking</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Toggle Button -->
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+
+    <!-- Chatbot Toggle -->
+    <div id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbotContainer" class="chatbot-container">
+        <iframe src="turftalk_chatbot.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Header -->
+        <header>
+            <h1>Welcome to Turf Booking</h1>
+        </header>
+        <br>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Unleash Your Game</h2>
+                <p>Discover premium turf booking, top-tier sports equipment, and a vibrant community to elevate your sports journey with Turf Booking.</p>
+                <a href="book.html" class="btn">Book Your Turf Now</a>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main>
+            <!-- About Section -->
+            <section id="about">
+                <h2>About Turf Booking</h2>
+                <p>Founded in 2023, Turf Booking is the ultimate platform for sports enthusiasts worldwide. We provide seamless turf booking for cricket, football, basketball, and more, alongside high-quality sports equipment, performance tracking tools, and a community platform to connect athletes. Our mission is to make sports accessible, engaging, and empowering for all skill levels.</p>
+                <p>With cutting-edge technology, expert coaching resources, and a passion for sports, we’re here to help you achieve your athletic goals and create unforgettable moments on the field.</p>
+            </section>
+
+            <!-- Services Section -->
+            <section id="services">
+                <h2>Our Services</h2>
+                <div class="service-grid">
+                    <div class="service-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>Turf Booking</h3>
+                        <p>Book premium turfs for cricket, football, and more with real-time availability and flexible scheduling options.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-dumbbell"></i>
+                        <h3>Sports Equipment</h3>
+                        <p>Shop top-quality sports gear, from cricket bats to football boots, at competitive prices with fast delivery.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Connect Web</h3>
+                        <p>Join our community platform to connect with players, form teams, and organize exciting matches.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Performance Tracking</h3>
+                        <p>Monitor your progress with our advanced sports stats and development tracker tools.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <h3>Coaching Programs</h3>
+                        <p>Access expert-led coaching sessions to improve your skills and take your game to the next level.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fas fa-trophy"></i>
+                        <h3>Event Organization</h3>
+                        <p>Let us plan and manage your sports events, from local tournaments to corporate team-building activities.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Choose Us Section -->
+            <section id="why-choose-us">
+                <h2>Why Choose Us</h2>
+                <div class="why-choose-grid">
+                    <div class="why-choose-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Trusted Platform</h3>
+                        <p>Secure and reliable booking with 24/7 customer support.</p>
+                    </div>
+                    <div class="why-choose-card">
+                        <i class="fas fa-globe"></i>
+                        <h3>Global Reach</h3>
+                        <p>Access turfs and services in multiple cities worldwide.</p>
+                    </div>
+                    <div class="why-choose-card">
+                        <i class="fas fa-star"></i>
+                        <h3>Premium Quality</h3>
+                        <p>Top-tier facilities and equipment for the best experience.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section id="stats">
+                <h2>Our Impact</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>10,000+</h3>
+                        <p>Turf Bookings</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>5,000+</h3>
+                        <p>Active Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>50+</h3>
+                        <p>Cities Covered</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>1,000+</h3>
+                        <p>Events Organized</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quotes Section -->
+            <section id="quotes">
+                <h2>Inspirational Sports Quotes</h2>
+                <div class="quotes-grid">
+                    <div class="quote-card">
+                        <p>"You have to believe in yourself when no one else does – that makes you a winner right there."</p>
+                        <span>- Venus Williams</span>
+                    </div>
+                    <div class="quote-card">
+                        <p>"The only way to prove that you’re a good sport is to lose."</p>
+                        <span>- Ernie Banks</span>
+                    </div>
+                    <div class="quote-card">
+                        <p>"Hard work beats talent when talent doesn’t work hard."</p>
+                        <span>- Tim Notke</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section id="testimonials">
+                <h2>What Our Users Say</h2>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card">
+                        <img src="assets/person.jpg" alt="User">
+                        <p>"Turf Booking made it so easy to find and book a cricket pitch near me. The platform is user-friendly and reliable!"</p>
+                        <h4>Rahul Sharma</h4>
+                    </div>
+                    <div class="testimonial-card">
+                        <img src="assets/person.jpg" alt="User">
+                        <p>"The Connect Web feature helped me find a football team to join. I’ve made great friends through this platform!"</p>
+                        <h4>Ananya Patel</h4>
+                    </div>
+                    <div class="testimonial-card">
+                        <img src="assets/person.jpg" alt="User">
+                        <p>"The sports equipment I bought was top-notch, and the delivery was super fast. Highly recommend!"</p>
+                        <h4>Vikram Singh</h4>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Newsletter Section -->
+            <section class="newsletter">
+                <h2>Stay in the Game</h2>
+                <p>Join our newsletter for exclusive offers, sports tips, and updates on new features and events.</p>
+                <form>
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit">Subscribe Now</button>
+                </form>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">© 2025 Turf Booking. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Sidebar Toggle
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.querySelector('.content-wrapper');
+
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            toggleSidebarBtn.classList.toggle('open');
+            contentWrapper.classList.toggle('sidebar-open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                sidebar.classList.remove('open');
+                toggleSidebarBtn.classList.remove('open');
+                contentWrapper.classList.remove('sidebar-open');
+            }
+        });
+
+        // Chatbot Toggle
+        const chatbotToggle = document.getElementById('chatbotToggle');
+        const chatbotContainer = document.getElementById('chatbotContainer');
+
+        chatbotToggle.addEventListener('click', () => {
+            chatbotContainer.classList.toggle('open');
+            chatbotToggle.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!chatbotContainer.contains(e.target) && !chatbotToggle.contains(e.target)) {
+                chatbotContainer.classList.remove('open');
+                chatbotToggle.classList.remove('open');
+            }
+        });
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Back to Top Button Visibility
+        const backToTop = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Simple Particle Animation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = `${Math.random() * 5 + 2}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Particle Animation Keyframes
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { transform: translateY(-20px); opacity: 0.8; }
+                100% { transform: translateY(0); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>

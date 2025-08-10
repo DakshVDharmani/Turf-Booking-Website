@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQs - TurfConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-dark: #1a2a24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--light-green);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--light-green);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 0.8rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .content-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.4s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            margin-left: 300px;
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1518602164578-cd146531d5ac') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        main {
+            flex: 1;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+        }
+
+        section {
+            margin-bottom: 5rem;
+            padding: 3rem 2rem;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(90deg, var(--light-green), #fff);
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--secondary-green);
+            border-radius: 2px;
+        }
+
+        .faq-card {
+            background: var(--light-green);
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--accent-green);
+        }
+
+        .faq-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .faq-question i {
+            font-size: 1.2rem;
+            color: var(--secondary-green);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-card[aria-expanded="true"] .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            margin-top: 0;
+            font-size: 1rem;
+            color: #444;
+            transition: max-height 0.3s ease, margin-top 0.3s ease;
+        }
+
+        .faq-card[aria-expanded="true"] .faq-answer {
+            max-height: 200px; /* Adjust based on content */
+            margin-top: 1rem;
+        }
+
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-toggle:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .chatbot-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .chatbot-toggle .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container.open {
+            display: flex;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1rem;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-icons a {
+            color: var(--light-green);
+            font-size: 1.6rem;
+            margin: 0 0.8rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                margin-left: 300px;
+            }
+
+            .hero-content h2 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h2 {
+                font-size: 2.5rem;
+            }
+
+            section h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .faq-question {
+                font-size: 1.2rem;
+            }
+
+            .faq-answer {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 95%;
+                height: 70vh;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .faq-question {
+                font-size: 1.1rem;
+            }
+
+            .faq-answer {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>TurfConnect</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+        <span class="notification-badge">1</span>
+    </div>
+    <div id="chatbotContainer" class="chatbot-container">
+        <iframe src="turftalk_chatbot.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+    <div class="content-wrapper">
+        <header>
+            <h1>Frequently Asked Questions</h1>
+        </header>
+        <br>
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Your TurfConnect Queries Answered</h2>
+                <p class="text-lg">Find answers to common questions about booking turfs, using our platform, and more!</p>
+            </div>
+        </section>
+        <main>
+            <section id="faqs">
+                <h2>FAQs</h2>
+                <div class="faq-list">
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I book a turf on TurfConnect?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Navigate to the "Book Turf Slot" page, select your preferred location, date, and time, and follow the prompts to confirm your booking. You’ll receive a confirmation email with details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Can I cancel or modify my booking?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, you can cancel or modify bookings up to 24 hours before the slot via your account dashboard. Refunds depend on the turf’s cancellation policy.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>What payment methods are accepted?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We accept credit/debit cards, UPI, and net banking. All payments are processed securely through our trusted payment gateway.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I purchase sports equipment?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Visit the "Equipments and More" page, add items to your cart, and complete the purchase using our secure checkout process.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Is there a membership program?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, our premium membership offers discounts on bookings, exclusive events, and priority slots. Check the "Home" page for details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I track my sports stats?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Use the "Cricket Stats" or "My Sports Development" pages to input match data and view analytics like scorecards and shot ranges.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>What sports are supported on TurfConnect?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Currently, we support cricket, with plans to add soccer, badminton, and more in future updates.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How does the TurfTalk chatbot work?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Click the chatbot icon to start a 24/7 conversation for booking help, sports tips, or platform navigation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Can I list my turf on TurfConnect?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, turf owners can register on our platform to list venues. Contact us via the "Contact Us" page for onboarding details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Are there age restrictions for booking?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Users must be 18+ to book independently. Minors can book with parental consent, subject to turf policies.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I join a community game?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Check the "Home" page for open games in your area, sign up, and connect with players via our chat feature.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>What if a turf is unavailable?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Use our search filters to find alternative turfs nearby or contact our support team for assistance.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Can I book multiple slots at once?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, you can book multiple slots in one session, subject to availability and turf policies.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How are refunds processed?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Refunds are credited to your original payment method within 5-7 business days, per the turf’s refund policy.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Is my personal data secure?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We use industry-standard encryption to protect your data. Read our "Privacy Policy" for more details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I report an issue with a turf?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Use the "Contact Us" page or chat with TurfTalk to report issues, and we’ll coordinate with the turf owner.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Can I rate or review a turf?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, after your booking, you can rate and review the turf on your account dashboard to help other players.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>Are group discounts available?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Some turfs offer group discounts. Check the turf’s booking page or contact us for details.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>How do I update my profile?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Go to your account settings to update your name, contact details, and preferences.</p>
+                        </div>
+                    </div>
+                    <div class="faq-card" role="region" aria-expanded="false" tabindex="0">
+                        <div class="faq-question">
+                            <span>What if I forget my password?</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Click "Forgot Password" on the login page and follow the instructions to reset it via email.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="text-center" style="background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); color: #fff; padding: 3rem 2rem; border-radius: 20px;">
+                <h2 class="text-3xl md:text-4xl font-semibold">Still Have Questions?</h2>
+                <p class="mt-4 text-lg max-w-2xl mx-auto">Reach out to our support team or chat with our TurfTalk chatbot for instant assistance!</p>
+                <a href="contactus.html" class="mt-6 inline-block bg-white text-green-700 font-bold py-3 px-6 rounded-lg hover:bg-green-100 hover-scale">Contact Us</a>
+            </section>
+        </main>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">©️ 2025 TurfConnect. All rights reserved.</p>
+        </footer>
+    </div>
+    <a href="#" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.querySelector('.content-wrapper');
+            const chatbotToggle = document.getElementById('chatbotToggle');
+            const chatbotContainer = document.getElementById('chatbotContainer');
+            const backToTop = document.querySelector('.back-to-top');
+
+            if (toggleSidebarBtn && sidebar && contentWrapper) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    toggleSidebarBtn.classList.toggle('open');
+                    contentWrapper.classList.toggle('sidebar-open');
+                });
+            }
+
+            if (document && window.innerWidth && sidebar && toggleSidebarBtn && chatbotContainer && chatbotToggle) {
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        toggleSidebarBtn.classList.remove('open');
+                        contentWrapper.classList.remove('sidebar-open');
+                    }
+                    if (!chatbotContainer.contains(e.target) && !chatbotToggle.contains(e.target)) {
+                        chatbotContainer.classList.remove('open');
+                        chatbotToggle.classList.remove('open');
+                    }
+                });
+            }
+
+            if (chatbotToggle && chatbotContainer) {
+                chatbotToggle.addEventListener('click', () => {
+                    chatbotContainer.classList.toggle('open');
+                    chatbotToggle.classList.toggle('open');
+                });
+            }
+
+            if (window && backToTop) {
+                window.addEventListener('scroll', () => {
+                    backToTop.classList.toggle('visible', window.scrollY > 300);
+                });
+            }
+
+            // Accordion functionality for FAQs
+            const faqCards = document.querySelectorAll('.faq-card');
+            if (faqCards) {
+                faqCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const isOpen = card.getAttribute('aria-expanded') === 'true';
+                        faqCards.forEach(c => {
+                            c.setAttribute('aria-expanded', 'false');
+                        });
+                        if (!isOpen) {
+                            card.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                    card.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            card.click();
+                        }
+                    });
+                });
+            }
+
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                if (particlesContainer) {
+                    for (let i = 0; i < 50; i++) {
+                        const particle = document.createElement('div');
+                        particle.style.position = 'absolute';
+                        particle.style.width = `${Math.random() * 5 + 2}px`;
+                        particle.style.height = particle.style.width;
+                        particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                        particle.style.borderRadius = '50%';
+                        particle.style.left = `${Math.random() * 100}vw`;
+                        particle.style.top = `${Math.random() * 100}vh`;
+                        particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                        particlesContainer.appendChild(particle);
+                    }
+                }
+            }
+
+            createParticles();
+
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes float {
+                    0% { transform: translateY(0); opacity: 0.5; }
+                    50% { transform: translateY(-20px); opacity: 0.8; }
+                    100% { transform: translateY(0); opacity: 0.5; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
+</body>
+</html>

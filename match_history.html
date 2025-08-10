@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sports Development - Match History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-dark: #1a2a24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--light-green);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--light-green);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: translateY(-50%) rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .content-wrapper {
+            transition: transform 0.4s ease;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            transform: translateX(300px);
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1517649765268-fb10c0c2fe6d') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        main {
+            flex: 1;
+            padding: 5rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+        }
+
+        section {
+            margin-bottom: 6rem;
+            padding: 4rem 2rem;
+            background: #fff;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--secondary-green);
+            border-radius: 2px;
+        }
+
+        .match-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--light-green);
+            border-radius: 15px;
+        }
+
+        .match-form label {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .match-form input, .match-form select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .match-form button {
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .match-form button:hover {
+            background: var(--accent-green);
+        }
+
+        .match-list ul {
+            list-style: none;
+        }
+
+        .match-list ul li {
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #444;
+            border-left: 5px solid var(--secondary-green);
+        }
+
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-toggle:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .chatbot-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .chatbot-toggle .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container.open {
+            display: flex;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1.2rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-icons a {
+            color: var(--light-green);
+            font-size: 1.8rem;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                transform: translateX(300px);
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                transform: translateX(300px);
+            }
+
+            .hero-content h2 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h2 {
+                font-size: 2.5rem;
+            }
+
+            section h2 {
+                font-size: 2.2rem;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Turf Booking</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+        <span class="notification-badge">1</span>
+    </div>
+    <div id="chatbotContainer" class="chatbot-container">
+        <iframe src="turftalk_chatbot.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+    <a href="#" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <div class="content-wrapper">
+        <header>
+            <h1>Match History</h1>
+        </header>
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Your Matches</h2>
+            </div>
+        </section>
+        <main>
+            <section id="match-history">
+                <h2>Log a New Match</h2>
+                <form id="match-form" class="match-form">
+                    <label for="sport">Sport</label>
+                    <select id="sport" required>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Football">Football</option>
+                        <option value="Basketball">Basketball</option>
+                    </select>
+                    <label for="turf">Turf Location</label>
+                    <input type="text" id="turf" readonly value="Random Pune Turf">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                    <label for="score">Your Score/Goals</label>
+                    <input type="number" id="score" min="0" required>
+                    <label for="opponent-score">Opponent Score</label>
+                    <input type="number" id="opponent-score" min="0" required>
+                    <label for="players">Number of Players</label>
+                    <input type="number" id="players" min="2" required>
+                    <button type="submit">Log Match</button>
+                </form>
+                <div class="match-list">
+                    <h2>Past Matches</h2>
+                    <ul id="match-list"></ul>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">© 2025 Turf Booking. All rights reserved.</p>
+        </footer>
+    </div>
+    <script>
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.querySelector('.content-wrapper');
+        const chatbotToggle = document.getElementById('chatbotToggle');
+        const chatbotContainer = document.getElementById('chatbotContainer');
+        const backToTop = document.querySelector('.back-to-top');
+
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            toggleSidebarBtn.classList.toggle('open');
+            contentWrapper.classList.toggle('sidebar-open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                sidebar.classList.remove('open');
+                toggleSidebarBtn.classList.remove('open');
+                contentWrapper.classList.remove('sidebar-open');
+            }
+            if (!chatbotContainer.contains(e.target) && !chatbotToggle.contains(e.target)) {
+                chatbotContainer.classList.remove('open');
+                chatbotToggle.classList.remove('open');
+            }
+        });
+
+        chatbotToggle.addEventListener('click', () => {
+            chatbotContainer.classList.toggle('open');
+            chatbotToggle.classList.toggle('open');
+        });
+
+        window.addEventListener('scroll', () => {
+            backToTop.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = `${Math.random() * 5 + 2}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { transform: translateY(-20px); opacity: 0.8; }
+                100% { transform: translateY(0); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        let userData = JSON.parse(sessionStorage.getItem('userData')) || {
+            name: "Player Name",
+            matches: [],
+            stats: { totalMatches: 0, totalGoals: 0, wins: 0, trainingHours: 0 },
+            achievements: [],
+            goals: []
+        };
+
+        const turfLocations = [
+            "Kothrud Turf", "Baner Indoor Arena", "Hinjewadi Grassland", "Viman Nagar Arena",
+            "Koregaon Park Pitch", "Pimple Saudagar Ground", "Aundh Sports Field", "Wakad Turf"
+        ];
+
+        function getRandomTurf() {
+            return turfLocations[Math.floor(Math.random() * turfLocations.length)];
+        }
+
+        document.getElementById('turf').value = getRandomTurf();
+
+        function renderMatches() {
+            const matchList = document.getElementById('match-list');
+            matchList.innerHTML = '';
+            userData.matches.forEach(match => {
+                const li = document.createElement('li');
+                li.innerHTML = `${match.sport} at ${match.turf} on ${match.date}: ${match.score} - ${match.opponentScore} (${match.players} players)`;
+                matchList.appendChild(li);
+            });
+        }
+
+        document.getElementById('match-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const match = {
+                sport: document.getElementById('sport').value,
+                turf: document.getElementById('turf').value,
+                date: document.getElementById('date').value,
+                score: parseInt(document.getElementById('score').value),
+                opponentScore: parseInt(document.getElementById('opponent-score').value),
+                players: parseInt(document.getElementById('players').value)
+            };
+            userData.matches.push(match);
+            userData.stats.totalMatches++;
+            userData.stats.totalGoals += match.score;
+            if (match.score > match.opponentScore) userData.stats.wins++;
+            sessionStorage.setItem('userData', JSON.stringify(userData));
+            renderMatches();
+            document.getElementById('turf').value = getRandomTurf();
+            checkAchievements();
+        });
+
+        function checkAchievements() {
+            const achievements = [
+                { id: 'matches_10', name: '10 Matches Played', condition: userData.stats.totalMatches >= 10 },
+                { id: 'goals_50', name: '50 Goals Scored', condition: userData.stats.totalGoals >= 50 }
+            ];
+            achievements.forEach(ach => {
+                if (ach.condition && !userData.achievements.includes(ach.id)) {
+                    userData.achievements.push(ach.id);
+                    alert(`Achievement Unlocked: ${ach.name}`);
+                }
+            });
+            sessionStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        renderMatches();
+    </script>
+</body>
+</html>

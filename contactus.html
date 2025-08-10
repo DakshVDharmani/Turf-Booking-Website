@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - TurfConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-dark: #1a2a24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--light-green);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--light-green);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+        }
+
+        .sidebar-nav ul li a.active {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 0.8rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .content-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.4s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            margin-left: 300px;
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1518602164578-cd146531d5ac') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        main {
+            flex: 1;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+        }
+
+        section {
+            margin-bottom: 5rem;
+            padding: 3rem 2rem;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--secondary-green);
+            border-radius: 2px;
+        }
+
+        .contact-form, .contact-info {
+            background: var(--light-green);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .contact-form:hover, .contact-info:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .contact-form input, .contact-form textarea {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 0.75rem 0.75rem 0.75rem 3.5rem; /* Increased left padding */
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .contact-form input:focus, .contact-form textarea:focus {
+            border-color: var(--secondary-green);
+            box-shadow: 0 0 8px rgba(106, 176, 76, 0.3);
+            outline: none;
+        }
+
+        .contact-form .input-icon {
+            position: absolute;
+            left: 1rem; /* Adjusted icon position */
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-green);
+            font-size: 1.25rem;
+        }
+
+        .contact-form .textarea-icon {
+            position: absolute;
+            left: 1rem; /* Adjusted icon position */
+            top: 1.25rem; /* Align with textarea top */
+            color: var(--secondary-green);
+            font-size: 1.25rem;
+        }
+
+        .submit-btn {
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            background: var(--accent-green);
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            background: var(--light-green);
+            color: var(--primary-green);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-toggle:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .chatbot-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .chatbot-toggle .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container.open {
+            display: flex;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1rem;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-icons a {
+            color: var(--light-green);
+            font-size: 1.6rem;
+            margin: 0 0.8rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .icon-container {
+            transition: transform 0.3s ease;
+        }
+
+        .icon-container:hover {
+            transform: scale(1.1);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                margin-left: 300px;
+            }
+
+            .hero-content h2 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h2 {
+                font-size: 2.5rem;
+            }
+
+            section h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .contact-form input, .contact-form textarea {
+                font-size: 0.95rem;
+                padding-left: 3rem; /* Adjusted for mobile */
+            }
+
+            .contact-form .input-icon, .contact-form .textarea-icon {
+                font-size: 1.1rem;
+                left: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 95%;
+                height: 70vh;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .contact-form input, .contact-form textarea {
+                font-size: 0.9rem;
+                padding-left: 2.75rem;
+            }
+
+            .contact-form .input-icon, .contact-form .textarea-icon {
+                font-size: 1rem;
+                left: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>TurfConnect</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html" class="active"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+        <span class="notification-badge">1</span>
+    </div>
+    <div id="chatbotContainer" class="chatbot-container">
+        <iframe src="turftalk_chatbot.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+    <div class="content-wrapper">
+        <header>
+            <h1>Contact Us</h1>
+        </header>
+        <br>
+        <br>
+        <br>
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Get in Touch with TurfConnect</h2>
+                <p class="text-lg">Reach out for any inquiries or assistance with your turf bookings!</p>
+            </div>
+        </section>
+        <main>
+            <div class="container mx-auto px-4 max-w-5xl">
+                <div id="alert" class="hidden alert mb-6"></div>
+                <section>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Contact Form -->
+                        <div class="contact-form">
+                            <h2 class="text-2xl font-bold text-[var(--primary-green)] mb-4">Send Us a Message</h2>
+                            <form id="contactForm" role="form">
+                                <div class="mb-4 relative">
+                                    <label for="name" class="block text-left text-[var(--primary-green)] font-semibold mb-2">Name</label>
+                                    <div class="relative">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" id="name" name="name" class="pr-4 py-2" placeholder="Your Name" required aria-required="true">
+                                    </div>
+                                </div>
+                                <div class="mb-4 relative">
+                                    <label for="email" class="block text-left text-[var(--primary-green)] font-semibold mb-2">Email</label>
+                                    <div class="relative">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" id="email" name="email" class="pr-4 py-2" placeholder="Your Email" required aria-required="true">
+                                    </div>
+                                </div>
+                                <div class="mb-4 relative">
+                                    <label for="message" class="block text-left text-[var(--primary-green)] font-semibold mb-2">Message</label>
+                                    <div class="relative">
+                                        <i class="fas fa-comment textarea-icon"></i>
+                                        <textarea id="message" name="message" rows="4" class="pr-4 py-2" placeholder="Your Message" required aria-required="true"></textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="submit-btn w-full flex items-center justify-center">
+                                    <i class="fas fa-paper-plane w-5 h-5 mr-2"></i>
+                                    Send Message
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Contact Information -->
+                        <div class="contact-info flex flex-col justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-[var(--primary-green)] mb-4">Contact Information</h2>
+                                <div class="space-y-4">
+                                    <div class="flex items-start icon-container">
+                                        <i class="fas fa-phone w-6 h-6 text-[var(--secondary-green)] mr-3 mt-1"></i>
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-[var(--primary-green)]">Phone</h3>
+                                            <p class="text-[#444]">+91 123-456-7890</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start icon-container">
+                                        <i class="fas fa-envelope w-6 h-6 text-[var(--secondary-green)] mr-3 mt-1"></i>
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-[var(--primary-green)]">Email</h3>
+                                            <p class="text-[#444]">support@turfconnect.com</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start icon-container">
+                                        <i class="fas fa-map-marker-alt w-6 h-6 text-[var(--secondary-green)] mr-3 mt-1"></i>
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-[var(--primary-green)]">Address</h3>
+                                            <p class="text-[#444]">123 Turf Lane, Sports City, India</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h3 class="text-lg font-semibold text-[var(--primary-green)] mb-2">Follow Us</h3>
+                                <div class="flex space-x-4">
+                                    <a href="#" class="icon-container">
+                                        <i class="fab fa-facebook-f w-6 h-6 text-[var(--secondary-green)] hover:text-[var(--accent-green)]"></i>
+                                    </a>
+                                    <a href="#" class="icon-container">
+                                        <i class="fab fa-twitter w-6 h-6 text-[var(--secondary-green)] hover:text-[var(--accent-green)]"></i>
+                                    </a>
+                                    <a href="#" class="icon-container">
+                                        <i class="fab fa-instagram w-6 h-6 text-[var(--secondary-green)] hover:text-[var(--accent-green)]"></i>
+                                    </a>
+                                    <a href="#" class="icon-container">
+                                        <i class="fab fa-linkedin-in w-6 h-6 text-[var(--secondary-green)] hover:text-[var(--accent-green)]"></i>
+                                    </a>
+                                    <a href="#" class="icon-container">
+                                        <i class="fab fa-youtube w-6 h-6 text-[var(--secondary-green)] hover:text-[var(--accent-green)]"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">©️ 2025 TurfConnect. All rights reserved.</p>
+        </footer>
+    </div>
+    <a href="#" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar'); // Fixed typo
+            const contentWrapper = document.querySelector('.content-wrapper');
+            const chatbotToggle = document.getElementById('chatbotToggle');
+            const chatbotContainer = document.getElementById('chatbotContainer');
+            const backToTop = document.querySelector('.back-to-top');
+            const contactForm = document.getElementById('contactForm');
+            const alertDiv = document.getElementById('alert');
+
+            if (toggleSidebarBtn && sidebar && contentWrapper) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    toggleSidebarBtn.classList.toggle('open');
+                    contentWrapper.classList.toggle('sidebar-open');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        toggleSidebarBtn.classList.remove('open');
+                        contentWrapper.classList.remove('sidebar-open');
+                    }
+                });
+            }
+
+            if (chatbotToggle && chatbotContainer) {
+                chatbotToggle.addEventListener('click', () => {
+                    chatbotContainer.classList.toggle('open');
+                    chatbotToggle.classList.toggle('open');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!chatbotContainer.contains(e.target) && !chatbotToggle.contains(e.target)) {
+                        chatbotContainer.classList.remove('open');
+                        chatbotToggle.classList.remove('open');
+                    }
+                });
+            }
+
+            if (window && backToTop) {
+                window.addEventListener('scroll', () => {
+                    backToTop.classList.toggle('visible', window.scrollY > 300);
+                });
+            }
+
+            if (contactForm && alertDiv) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    alertDiv.classList.remove('hidden');
+                    alertDiv.textContent = 'Thank you for reaching out! We’ll get back to you soon.';
+                    alertDiv.classList.add('opacity-100');
+                    contactForm.reset();
+                    setTimeout(() => {
+                        alertDiv.classList.add('opacity-0');
+                        setTimeout(() => {
+                            alertDiv.classList.add('hidden');
+                            alertDiv.classList.remove('opacity-0');
+                        }, 500);
+                    }, 3000);
+                });
+            }
+
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                if (particlesContainer) {
+                    for (let i = 0; i < 50; i++) {
+                        const particle = document.createElement('div');
+                        particle.style.position = 'absolute';
+                        particle.style.width = `${Math.random() * 5 + 2}px`;
+                        particle.style.height = particle.style.width;
+                        particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                        particle.style.borderRadius = '50%';
+                        particle.style.left = `${Math.random() * 100}vw`;
+                        particle.style.top = `${Math.random() * 100}vh`;
+                        particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                        particlesContainer.appendChild(particle);
+                    }
+                }
+            }
+
+            createParticles();
+
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes float {
+                    0% { transform: translateY(0); opacity: 0.5; }
+                    50% { transform: translateY(-20px); opacity: 0.8; }
+                    100% { transform: translateY(0); opacity: 0.5; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
+</body>
+</html>

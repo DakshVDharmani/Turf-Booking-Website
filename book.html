@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Turf Slot - Turf Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-color: #1a2a24;
+            --bg-light: #e6f4e6;
+            --bg-dark: #1a3c34;
+            --text-white: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-light: var(--bg-dark);
+            --text-color: var(--text-white);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-color);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: var(--text-white);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav {
+            margin-top: 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--light-green);
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-link i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-sidebar {
+            position: fixed;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-sidebar.open {
+            transform: translateY(-50%) rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-sidebar:hover {
+            background: var(--accent-green);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .content-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s ease;
+        }
+
+        .content-wrapper.sidebar-open {
+            transform: translateX(300px);
+        }
+
+        @media (min-width: 1024px) {
+            .content-wrapper {
+                transform: translateX(300px);
+                width: calc(100% - 300px);
+            }
+            .content-wrapper.sidebar-open {
+                transform: translateX(300px);
+            }
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1517649765268-fb10c0c2fe6d') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .toggle-dark {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+            z-index: 2;
+            background: var(--light-green);
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        body.dark-mode .toggle-dark {
+            background: var(--dark-green);
+            color: var(--text-color);
+        }
+
+        .toggle-dark:hover {
+            background: var(--accent-green);
+        }
+
+        .turf-container {
+            max-width: calc(100% - 4rem);
+            margin: 0 auto;
+            padding: 5rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 6rem;
+        }
+
+        @media (min-width: 1024px) {
+            .turf-container {
+                max-width: 900px;
+            }
+        }
+
+        .location-message {
+            background: var(--bg-light);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .turf-card {
+            background: var(--bg-light);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .turf-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .turf-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .turf-card p {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .slot-btn {
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .slot-btn.available {
+            background: var(--secondary-green);
+            color: #fff;
+        }
+
+        .slot-btn.available:hover {
+            background: var(--accent-green);
+            transform: scale(1.05);
+        }
+
+        .slot-btn:disabled {
+            background: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            border: 2px solid var(--light-green);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--secondary-green);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--bg-light);
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        body.dark-mode .modal-content input {
+            background: var(--bg-dark);
+        }
+
+        .modal-content button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .modal-content button[type="submit"] {
+            background: var(--secondary-green);
+            color: #fff;
+        }
+
+        .modal-content button[type="submit"]:hover {
+            background: var(--accent-green);
+            transform: scale(1.02);
+        }
+
+        .modal-content button[type="button"] {
+            background: #e5e7eb;
+            color: var(--text-color);
+        }
+
+        .modal-content button[type="button"]:hover {
+            background: #d1d5db;
+            transform: scale(1.02);
+        }
+
+        .chatbot-wrapper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            z-index: 1002;
+        }
+
+        .chatbot-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            z-index: 1003;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1002;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1.2rem;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-links a {
+            color: var(--light-green);
+            font-size: 1.8rem;
+            margin: 0 1rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-links a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .turf-container {
+                padding: 3rem 1rem;
+                max-width: calc(100% - 2rem);
+            }
+
+            .chatbot-wrapper {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                height: 40vh;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero-content p {
+                font-size: 0.9rem;
+            }
+
+            .turf-card {
+                padding: 1.5rem;
+            }
+
+            .chatbot-wrapper {
+                width: 95%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Turf Booking</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html" class="sidebar-link"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html" class="sidebar-link active"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="my-bookings.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i> My Bookings</a></li>
+                <li><a href="productlistingpage.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i> Equipments and more</a></li>
+                <li><a href="sports_stats.html" class="sidebar-link"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html" class="sidebar-link"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="about.html" class="sidebar-link"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contact.html" class="sidebar-link"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html" class="sidebar-link"><i class="fas fa-question-circle"></i> FAQs and more</a></li>
+                <li><a href="logout.html" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-sidebar lg:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div class="chatbot-wrapper">
+        <iframe src="turftalk_chatbot.html" title="TurfTalk Chatbot"></iframe>
+    </div>
+    <a href="#" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <div class="content-wrapper">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Book Your Turf Slot</h1>
+                <p>Discover top turf centers near you in Pune and reserve your slot for an unforgettable game!</p>
+                <button class="toggle-dark" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            </div>
+        </section>
+        <main class="turf-container">
+            <div id="location-message" class="location-message hidden">
+                <p class="text-lg font-medium">Please allow location access to find turf centers in your area.</p>
+                <button id="retry-location" class="mt-4 bg-[var(--secondary-green)] text-white py-2 px-6 rounded-lg hover:bg-[var(--accent-green)]">Try Again</button>
+            </div>
+            <div id="turf-centers" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
+        </main>
+        <div id="booking-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="modal-turf-name" class="text-2xl"></h3>
+                <p id="modal-slot-time"></p>
+                <form id="booking-form">
+                    <label class="block text-[var(--text-color)] font-medium mb-2">Select Date:</label>
+                    <input type="date" id="booking-date" required min="2025-06-14">
+                    <input type="hidden" id="modal-turf-id">
+                    <input type="hidden" id="modal-turf-name-input">
+                    <input type="hidden" id="modal-slot-time-input">
+                    <div class="flex gap-4 mt-6">
+                        <button type="submit">Confirm Booking</button>
+                        <button type="button" id="close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-links mt-4">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">© 2025 Turf Booking. All rights reserved.</p>
+        </footer>
+    </div>
+    <div id="toast" class="toast"></div>
+    <script>
+        // Sidebar Toggle
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.querySelector('.content-wrapper');
+        if (toggleSidebarBtn && sidebar) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                toggleSidebarBtn.classList.toggle('open');
+                contentWrapper.classList.toggle('sidebar-open');
+            });
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                    toggleSidebarBtn.classList.remove('open');
+                    contentWrapper.classList.remove('sidebar-open');
+                }
+            });
+        }
+
+        // Particle animations
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 5 + 2;
+                particle.style.position = 'absolute';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { transform: translateY(-20px); opacity: 0.8; }
+                100% { transform: translateY(0); opacity: 0.5; }
+            }
+            @keyframes fade-in {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fade-in 0.5s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Back-to-top button
+        const backToTop = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            backToTop.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            if (isError) {
+                toast.classList.add('error');
+            }
+            setTimeout(() => {
+                toast.classList.remove('show', 'error');
+            }, 3000);
+        }
+
+        // Authentication check
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            showToast('Please log in to book a slot', true);
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+
+        // Pune PIN Codes with Mock Coordinates
+        const punePinCodes = [
+            { pin: '411014', area: 'Kharadi', lat: 18.5537, lng: 73.9460 },
+            { pin: '411037', area: 'Bibwewadi', lat: 18.4770, lng: 73.8580 },
+            { pin: '411038', area: 'Kothrud', lat: 18.5074, lng: 73.8077 },
+            { pin: '411028', area: 'Hadapsar', lat: 18.5089, lng: 73.9259 },
+            { pin: '411007', area: 'Aundh', lat: 18.5625, lng: 73.8037 },
+            { pin: '411001', area: 'Pune City', lat: 18.5204, lng: 73.8567 },
+            { pin: '411045', area: 'Baner', lat: 18.5590, lng: 73.7868 }
+        ];
+
+        // Mock Turf Data Generator
+        function generateTurfs(pin, area) {
+            return [
+                {
+                    id: 1,
+                    name: `${area} Sports Arena`,
+                    address: `Plot No. 10, ${area}, Pune, Maharashtra, PIN ${pin}`,
+                    slots: generateSlots()
+                },
+                {
+                    id: 2,
+                    name: `${area} Turf Hub`,
+                    address: `Main Road, ${area}, Pune, Maharashtra, PIN ${pin}`,
+                    slots: generateSlots()
+                },
+                {
+                    id: 3,
+                    name: `${area} Kick Stadium`,
+                    address: `Near Market, ${area}, Pune, Maharashtra, PIN ${pin}`,
+                    slots: generateSlots()
+                }
+            ];
+        }
+
+        // Generate Slots (6 AM to 10 PM, hourly)
+        function generateSlots() {
+            const slots = [];
+            for (let hour = 6; hour <= 21; hour++) {
+                const time = `${hour}:00 ${hour < 12 ? 'AM' : 'PM'}`;
+                slots.push({ time, available: Math.random() > 0.3 });
+            }
+            return slots;
+        }
+
+        // Find Closest PIN Code
+        function findPinCode(lat, lng) {
+            let closest = punePinCodes[0];
+            let minDistance = Infinity;
+            punePinCodes.forEach(pin => {
+                const distance = Math.sqrt(Math.pow(lat - pin.lat, 2) + Math.pow(lng - pin.lng, 2));
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = pin;
+                }
+            });
+            return closest;
+        }
+
+        // Display Turfs
+        function displayTurfs(pin, area) {
+            const turfs = generateTurfs(pin, area);
+            const turfCenters = document.getElementById('turf-centers');
+            turfCenters.innerHTML = '';
+            turfs.forEach(turf => {
+                const card = document.createElement('div');
+                card.className = 'turf-card animate-fade-in';
+                card.innerHTML = `
+                    <div class="flex items-center gap-4 mb-4">
+                        <i class="fas fa-futbol text-2xl text-[var(--secondary-green)]"></i>
+                        <h3>${turf.name}</h3>
+                    </div>
+                    <p>${turf.address}</p>
+                    <p class="font-medium">Available Slots:</p>
+                    <div class="grid grid-cols-4 gap-2 mt-2">
+                        ${turf.slots.map(slot => `
+                            <button class="slot-btn ${slot.available ? 'available' : ''}" 
+                                    data-turf-id="${turf.id}" 
+                                    data-turf-name="${turf.name}" 
+                                    data-slot-time="${slot.time}" 
+                                    ${slot.available ? '' : 'disabled'}>
+                                ${slot.time}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                turfCenters.appendChild(card);
+            });
+
+            // Handle Slot Button Clicks
+            document.querySelectorAll('.slot-btn.available').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = document.getElementById('booking-modal');
+                    const turfName = btn.dataset.turfName;
+                    const slotTime = btn.dataset.slotTime;
+                    const turfId = btn.dataset.turfId;
+                    document.getElementById('modal-turf-name').textContent = turfName;
+                    document.getElementById('modal-slot-time').textContent = `Slot: ${slotTime}`;
+                    document.getElementById('modal-turf-id').value = turfId;
+                    document.getElementById('modal-turf-name-input').value = turfName;
+                    document.getElementById('modal-slot-time-input').value = slotTime;
+                    modal.classList.remove('hidden');
+                });
+            });
+        }
+
+        // Modal Handling
+        const modal = document.getElementById('booking-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const bookingForm = document.getElementById('booking-form');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        }
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const turfId = document.getElementById('modal-turf-id').value;
+                const turfName = document.getElementById('modal-turf-name-input').value;
+                const slotTime = document.getElementById('modal-slot-time-input').value;
+                const date = document.getElementById('booking-date').value;
+                const booking = {
+                    id: Date.now(),
+                    username: currentUser.username,
+                    email: currentUser.email,
+                    turfName,
+                    date,
+                    time: slotTime
+                };
+                let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+                bookings.push(booking);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                showToast('Slot booked successfully! Check "My Bookings" page.');
+                modal.classList.add('hidden');
+                bookingForm.reset();
+                const pin = document.getElementById('turf-centers').dataset.pin || '411014';
+                const area = document.getElementById('turf-centers').dataset.area || 'Kharadi';
+                displayTurfs(pin, area);
+            });
+        }
+
+        // Request Location
+        function requestLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        const { pin, area } = findPinCode(latitude, longitude);
+                        document.getElementById('turf-centers').dataset.pin = pin;
+                        document.getElementById('turf-centers').dataset.area = area;
+                        displayTurfs(pin, area);
+                    },
+                    () => {
+                        document.getElementById('location-message').classList.remove('hidden');
+                        displayTurfs('411014', 'Kharadi');
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                document.getElementById('location-message').classList.remove('hidden');
+                displayTurfs('411014', 'Kharadi');
+            }
+        }
+
+        // Retry Location Button
+        document.getElementById('retry-location')?.addEventListener('click', requestLocation);
+
+        // Initialize
+        if (currentUser) {
+            requestLocation();
+        }
+    </script>
+</body>
+</html>

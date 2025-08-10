@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - TurfConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #2a6b54;
+            --secondary-green: #6ab04c;
+            --accent-green: #b7e1a1;
+            --dark-green: #1a4536;
+            --light-green: #e6f4e6;
+            --text-dark: #1a2a24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--light-green);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(182, 225, 161, 0.2), transparent);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-green), var(--dark-green));
+            color: #fff;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--accent-green);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            color: var(--light-green);
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-nav ul li a i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-nav ul li a:hover {
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding-left: 2.5rem;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--secondary-green);
+            color: var(--dark-green);
+            padding: 0.8rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: background 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-btn.open {
+            transform: rotate(180deg);
+            background: var(--accent-green);
+        }
+
+        .toggle-btn:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .content-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.4s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper.sidebar-open {
+            margin-left: 300px;
+        }
+
+        header {
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-green));
+            color: #fff;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .hero {
+            background: url('https://images.unsplash.com/photo-1518602164578-cd146531d5ac') no-repeat center center;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            position: relative;
+            margin-bottom: 5rem;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 107, 84, 0.7), rgba(106, 176, 76, 0.5));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            padding: 3rem;
+        }
+
+        .hero-content h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        main {
+            flex: 1;
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, var(--light-green), #d0e8d0);
+        }
+
+        section {
+            margin-bottom: 5rem;
+            padding: 3rem 2rem;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--secondary-green);
+            border-radius: 2px;
+        }
+
+        .feature-card, .team-card {
+            background: var(--light-green);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover, .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--secondary-green);
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3, .team-card h3 {
+            font-size: 1.4rem;
+            color: var(--primary-green);
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-card p, .team-card p {
+            font-size: 1rem;
+            color: #444;
+        }
+
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-green);
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-toggle:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .chatbot-toggle i {
+            font-size: 1.8rem;
+        }
+
+        .chatbot-toggle .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 500px;
+            background-color: #f5f5f5;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            font-family: 'Arial', sans-serif;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-container.open {
+            display: flex;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--secondary-green);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1000;
+            display: none;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            background: var(--accent-green);
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: block;
+        }
+
+        footer {
+            background: var(--dark-green);
+            color: var(--light-green);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer .footer-links a {
+            color: var(--accent-green);
+            margin: 0 1rem;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer .social-icons a {
+            color: var(--light-green);
+            font-size: 1.6rem;
+            margin: 0 0.8rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        footer .social-icons a:hover {
+            color: var(--accent-green);
+            transform: scale(1.2);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+
+            .toggle-btn {
+                display: none;
+            }
+
+            .content-wrapper {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+
+            .content-wrapper.sidebar-open {
+                margin-left: 300px;
+            }
+
+            .hero-content h2 {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+            }
+
+            .hero-content h2 {
+                font-size: 2.5rem;
+            }
+
+            section h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                height: 80vh;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .feature-card h3, .team-card h3 {
+                font-size: 1.3rem;
+            }
+
+            .feature-card p, .team-card p {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 2rem;
+            }
+
+            .chatbot-container {
+                width: 95%;
+                height: 70vh;
+            }
+
+            .hero-content p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>TurfConnect</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="book.html"><i class="fas fa-calendar-check"></i> Book Turf Slot</a></li>
+                <li><a href="productlistingpage.html"><i class="fas fa-shopping-cart"></i> Equipments and More</a></li>
+                <li><a href="sports_stats.html"><i class="fas fa-chart-bar"></i> Sports Stats</a></li>
+                <li><a href="development_tracker.html"><i class="fas fa-trophy"></i> My Sports Development</a></li>
+                <li><a href="aboutus.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+                <li><a href="faqs.html"><i class="fas fa-question-circle"></i> FAQs and More</a></li>
+                <li><a href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-btn lg:hidden">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div id="chatbotToggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+        <span class="notification-badge">1</span>
+    </div>
+    <div id="chatbotContainer" class="chatbot-container">
+        <iframe src="turftalk_chatbot.html" style="width: 100%; height: 100%; border: none; border-radius: 15px;"></iframe>
+    </div>
+    <div class="content-wrapper">
+        <header>
+            <h1>About TurfConnect</h1>
+        </header>
+        <br>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Connecting Turf Lovers Worldwide</h2>
+                <p class="text-lg">Join our vibrant community of players, owners, and enthusiasts!</p>
+            </div>
+        </section>
+        <main>
+            <section id="mission">
+                <h2>Our Mission</h2>
+                <p class="text-lg text-center max-w-3xl mx-auto">
+                    At TurfConnect, we’re passionate about bringing sports enthusiasts together. Whether you’re a turf owner looking to showcase your venue, a player seeking the perfect pitch, or a beginner eager to learn, we’ve got you covered. Our platform is your one-stop destination for booking turfs, connecting with fellow players, and elevating your game with real-time insights and tips.
+                </p>
+            </section>
+            <section id="features">
+                <h2>What We Offer</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div class="feature-card">
+                        <i class="fas fa-futbol"></i>
+                        <h3>Book Your Turf</h3>
+                        <p>Easily browse and book turfs with real-time availability, location details, and pricing. Find the perfect spot for your next match!</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Connect & Chat</h3>
+                        <p>Join a vibrant community of players. Chat with teammates, meet new players, and coordinate matches effortlessly.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Learn & Track</h3>
+                        <p>Access tips, tutorials, and real-time match analytics like scorecards, shot ranges, and commentary to level up your game.</p>
+                    </div>
+                </div>
+            </section>
+            <section id="video">
+                <h2>See TurfConnect in Action</h2>
+                <div class="mt-6 flex justify-center">
+                    <iframe class="rounded-lg hover-scale" width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="TurfConnect Promo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </section>
+            <section id="team">
+                <h2>Meet Our Team</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Daksh Dharmani" class="mx-auto rounded-full hover-scale">
+                        <h3>Daksh Dharmani</h3>
+                        <p class="font-semibold">CEO and IT Expert</p>
+                        <p>Powers our platform with cutting-edge tech and a smart chatbot for all your queries.</p>
+                    </div>
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Aryan Chugera" class="mx-auto rounded-full hover-scale">
+                        <h3>Aryan Chugera</h3>
+                        <p class="font-semibold">Research and Development</p>
+                        <p>Drives TurfConnect’s vision and manages connections with turf owners to bring the best venues to you.</p>
+                    </div>
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Atif Dadhiwale" class="mx-auto rounded-full hover-scale">
+                        <h3>Atif Dadhiwale</h3>
+                        <p class="font-semibold">Sports Management</p>
+                        <p>Ensures seamless sports experiences with expert management of events and activities.</p>
+                    </div>
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Sumit Dahiwal" class="mx-auto rounded-full hover-scale">
+                        <h3>Sumit Dahiwal</h3>
+                        <p class="font-semibold">Community & E-Sales Manager</p>
+                        <p>Builds our vibrant community and oversees e-sales of top-quality sports equipment.</p>
+                    </div>
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Karan Daliya" class="mx-auto rounded-full hover-scale">
+                        <h3>Karan Daliya</h3>
+                        <p class="font-semibold">Shopping & Quality Manager</p>
+                        <p>Ensures a smooth shopping experience with high-quality sports products.</p>
+                    </div>
+                    <div class="team-card">
+                        <img src="assets/person.jpg" alt="Ronit Dahiwal" class="mx-auto rounded-full hover-scale">
+                        <h3>Ronit Dahiwal</h3>
+                        <p class="font-semibold">HR Manager</p>
+                        <p>Fosters a dynamic team environment to keep TurfConnect thriving.</p>
+                    </div>
+                </div>
+            </section>
+            <section class="text-center" style="background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); color: #fff; padding: 3rem 2rem; border-radius: 20px;">
+                <h2 class="text-3xl md:text-4xl font-semibold">Join the TurfConnect Community</h2>
+                <p class="mt-4 text-lg max-w-2xl mx-auto">Ready to kick off your next game? Sign up today to book turfs, connect with players, and take your sports experience to the next level!</p>
+                <a href="website_mainpage.html" class="mt-6 inline-block bg-white text-green-700 font-bold py-3 px-6 rounded-lg hover:bg-green-100 hover-scale">Get Started</a>
+            </section>
+        </main>
+        <footer>
+            <div class="footer-links">
+                <a href="aboutus.html">About Us</a>
+                <a href="contactus.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="social-icons mt-4">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="mt-4">©️ 2025 TurfConnect. All rights reserved.</p>
+        </footer>
+    </div>
+    <a href="#" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.querySelector('.content-wrapper');
+            const chatbotToggle = document.getElementById('chatbotToggle');
+            const chatbotContainer = document.getElementById('chatbotContainer');
+            const backToTop = document.querySelector('.back-to-top');
+
+            if (toggleSidebarBtn && sidebar && contentWrapper) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    toggleSidebarBtn.classList.toggle('open');
+                    contentWrapper.classList.toggle('sidebar-open');
+                });
+            }
+
+            if (document && window.innerWidth && sidebar && toggleSidebarBtn && chatbotContainer && chatbotToggle) {
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                        toggleSidebarBtn.classList.remove('open');
+                        contentWrapper.classList.remove('sidebar-open');
+                    }
+                    if (!chatbotContainer.contains(e.target) && !chatbotToggle.contains(e.target)) {
+                        chatbotContainer.classList.remove('open');
+                        chatbotToggle.classList.remove('open');
+                    }
+                });
+            }
+
+            if (chatbotToggle && chatbotContainer) {
+                chatbotToggle.addEventListener('click', () => {
+                    chatbotContainer.classList.toggle('open');
+                    chatbotToggle.classList.toggle('open');
+                });
+            }
+
+            if (window && backToTop) {
+                window.addEventListener('scroll', () => {
+                    backToTop.classList.toggle('visible', window.scrollY > 300);
+                });
+            }
+
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                if (particlesContainer) {
+                    for (let i = 0; i < 50; i++) {
+                        const particle = document.createElement('div');
+                        particle.style.position = 'absolute';
+                        particle.style.width = `${Math.random() * 5 + 2}px`;
+                        particle.style.height = particle.style.width;
+                        particle.style.background = 'rgba(182, 225, 161, 0.5)';
+                        particle.style.borderRadius = '50%';
+                        particle.style.left = `${Math.random() * 100}vw`;
+                        particle.style.top = `${Math.random() * 100}vh`;
+                        particle.style.animation = `float ${Math.random() * 10 + 5}s infinite`;
+                        particlesContainer.appendChild(particle);
+                    }
+                }
+            }
+
+            createParticles();
+
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes float {
+                    0% { transform: translateY(0); opacity: 0.5; }
+                    50% { transform: translateY(-20px); opacity: 0.8; }
+                    100% { transform: translateY(0); opacity: 0.5; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
+</body>
+</html>

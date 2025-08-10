@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Trajectory Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c6e49;
+            font-size: 2.5em;
+        }
+        p {
+            color: #333;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #videoUpload {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 1em;
+        }
+        #videoPlayer {
+            width: 560px;
+            height: 315px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        #trajectoryCanvas {
+            width: 560px;
+            height: 315px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+        #feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            font-size: 1.2em;
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+        footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ball Trajectory Analysis</h1>
+        <p>Upload a video of your basketball throw to track the ball’s trajectory. Click on the canvas to set the basket’s center before playing the video.</p>
+        <input type="file" id="videoUpload" accept="video/mp4,video/webm">
+        <video id="videoPlayer" controls></video>
+        <canvas id="trajectoryCanvas" width="560" height="315"></canvas>
+        <div id="feedback">Upload a video to see the analysis results.</div>
+        <p id="errorMessage" style="display: none;">Error: Could not load video. Please use MP4 or WebM format.</p>
+    </div>
+    <footer>© 2025 Simple Basketball Analysis</footer>
+
+    <script>
+        // Initialize DOM elements
+        const videoElement = document.getElementById('videoPlayer');
+        const canvasElement = document.getElementById('trajectoryCanvas');
+        const ctx = canvasElement.getContext('2d');
+        const feedbackElement = document.getElementById('feedback');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Configuration
+        let BASKET_X = canvasElement.width * 0.7; // Default basket position
+        let BASKET_Y = canvasElement.height * 0.3;
+        const SUCCESS_THRESHOLD = 80; // Initial threshold for proximity (pixels)
+        const HOOP_RADIUS = 30; // Approximate hoop radius in pixels (scaled to canvas)
+        const BALL_COLOR = { r: 255, g: 0, b: 0 }; // Red ball
+        const COLOR_TOLERANCE = 80; // Tolerance for lighting variations
+        const MIN_PIXEL_COUNT = 5; // Minimum pixels for detection
+        const CLUSTER_THRESHOLD = 20; // Pixels must be within this distance to be part of the same cluster
+        const SMOOTHING_FRAMES = 3; // Number of frames to average for smoothing
+
+        // Trajectory and shot data
+        let ballPositions = [];
+        let rawPositions = []; // For smoothing
+        let isAnalyzing = false;
+        let lastKnownPosition = null;
+        let closestDistToBasket = Infinity;
+        let closestPosition = null;
+        let madeShot = false;
+
+        // Calculate distance between two points
+        function dist(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
+        // Check if pixel matches ball color
+        function isBallColor(r, g, b) {
+            const matches = Math.abs(r - BALL_COLOR.r) < COLOR_TOLERANCE &&
+                           Math.abs(g - BALL_COLOR.g) < COLOR_TOLERANCE &&
+                           Math.abs(b - BALL_COLOR.b) < COLOR_TOLERANCE;
+            if (matches) {
+                console.log(`Matched pixel at RGB(${r}, ${g}, ${b})`);
+            }
+            return matches;
+        }
+
+        // Detect ball in frame with clustering
+        function detectBall() {
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const data = imageData.data;
+
+            // Collect matching pixels
+            let matchingPixels = [];
+            for (let y = 0; y < canvasElement.height; y += 2) {
+                for (let x = 0; x < canvasElement.width; x += 2) {
+                    const idx = (y * canvasElement.width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    if (isBallColor(r, g, b)) {
+                        matchingPixels.push({ x, y });
+                    }
+                }
+            }
+
+            // Cluster pixels
+            let clusters = [];
+            while (matchingPixels.length > 0) {
+                let pixel = matchingPixels.shift();
+                let cluster = [pixel];
+                let i = 0;
+                while (i < matchingPixels.length) {
+                    let otherPixel = matchingPixels[i];
+                    if (dist(pixel.x, pixel.y, otherPixel.x, otherPixel.y) < CLUSTER_THRESHOLD) {
+                        cluster.push(otherPixel);
+                        matchingPixels.splice(i, 1);
+                    } else {
+                        i++;
+                    }
+                }
+                if (cluster.length >= MIN_PIXEL_COUNT) {
+                    clusters.push(cluster);
+                }
+            }
+
+            // Find largest cluster
+            if (clusters.length > 0) {
+                clusters.sort((a, b) => b.length - a.length);
+                const largestCluster = clusters[0];
+                let sumX = 0, sumY = 0;
+                let minX = canvasElement.width, maxX = 0, minY = canvasElement.height, maxY = 0;
+                for (let pixel of largestCluster) {
+                    sumX += pixel.x;
+                    sumY += pixel.y;
+                    minX = Math.min(minX, pixel.x);
+                    maxX = Math.max(maxX, pixel.x);
+                    minY = Math.min(minY, pixel.y);
+                    maxY = Math.max(maxY, pixel.y);
+                }
+                const avgX = sumX / largestCluster.length;
+                const avgY = sumY / largestCluster.length;
+                const rawPos = { x: avgX, y: avgY, bbox: { minX, maxX, minY, maxY } };
+                rawPositions.push(rawPos);
+
+                // Smooth position
+                let smoothedX = 0, smoothedY = 0, count = 0;
+                for (let i = Math.max(0, rawPositions.length - SMOOTHING_FRAMES); i < rawPositions.length; i++) {
+                    smoothedX += rawPositions[i].x;
+                    smoothedY += rawPositions[i].y;
+                    count++;
+                }
+                smoothedX /= count;
+                smoothedY /= count;
+
+                console.log(`Detected ball at (${smoothedX.toFixed(2)}, ${smoothedY.toFixed(2)}), cluster size: ${largestCluster.length}`);
+                lastKnownPosition = { x: smoothedX, y: smoothedY, bbox: { minX, maxX, minY, maxY } };
+                return lastKnownPosition;
+            }
+
+            console.log(`No ball detected, matching pixels: ${matchingPixels.length}`);
+            return lastKnownPosition;
+        }
+
+        // Allow user to set basket position by clicking
+        canvasElement.addEventListener('click', function(e) {
+            const rect = canvasElement.getBoundingClientRect();
+            BASKET_X = e.clientX - rect.left;
+            BASKET_Y = e.clientY - rect.top;
+            console.log(`Basket position set to (${BASKET_X.toFixed(2)}, ${BASKET_Y.toFixed(2)})`);
+            // Redraw basket
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            ctx.beginPath();
+            ctx.fillStyle = 'orange';
+            ctx.arc(BASKET_X, BASKET_Y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.strokeStyle = 'cyan';
+            ctx.lineWidth = 2;
+            ctx.arc(BASKET_X, BASKET_Y, HOOP_RADIUS, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+
+        // Draw trajectory, basket, and debug info
+        function drawTrajectory() {
+            if (!isAnalyzing || !videoElement || videoElement.paused || videoElement.ended) {
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            // Detect ball position
+            const ballPos = detectBall();
+            if (ballPos) {
+                ballPositions.push(ballPos);
+
+                // Draw red trajectory line
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                for (let i = 1; i < ballPositions.length; i++) {
+                    ctx.moveTo(ballPositions[i-1].x, ballPositions[i-1].y);
+                    ctx.lineTo(ballPositions[i].x, ballPositions[i].y);
+                }
+                ctx.stroke();
+
+                // Draw current ball position
+                ctx.beginPath();
+                ctx.fillStyle = 'blue';
+                ctx.arc(ballPos.x, ballPos.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw bounding box
+                ctx.beginPath();
+                ctx.strokeStyle = 'yellow';
+                ctx.lineWidth = 1;
+                ctx.rect(ballPos.bbox.minX, ballPos.bbox.minY, ballPos.bbox.maxX - ballPos.bbox.minX, ballPos.bbox.maxY - ballPos.bbox.minY);
+                ctx.stroke();
+
+                // Check if ball is inside hoop
+                const currentDist = dist(ballPos.x, ballPos.y, BASKET_X, BASKET_Y);
+                console.log(`Frame distance to basket: ${currentDist.toFixed(2)}px`);
+                if (currentDist < HOOP_RADIUS) {
+                    madeShot = true;
+                }
+
+                // Track closest position for fallback
+                if (currentDist < closestDistToBasket) {
+                    closestDistToBasket = currentDist;
+                    closestPosition = ballPos;
+                }
+            } else {
+                console.log('No ball position available for this frame.');
+            }
+
+            // Draw basket
+            ctx.beginPath();
+            ctx.fillStyle = 'orange';
+            ctx.arc(BASKET_X, BASKET_Y, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw hoop hit area
+            ctx.beginPath();
+            ctx.strokeStyle = 'cyan';
+            ctx.lineWidth = 2;
+            ctx.arc(BASKET_X, BASKET_Y, HOOP_RADIUS, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Evaluate at video end
+            if (videoElement.currentTime >= videoElement.duration - 0.1) {
+                const evalPos = closestPosition || ballPositions[ballPositions.length - 1];
+                if (evalPos) {
+                    const distToBasket = dist(evalPos.x, evalPos.y, BASKET_X, BASKET_Y);
+                    console.log(`Evaluated ball position: (${evalPos.x.toFixed(2)}, ${evalPos.y.toFixed(2)})`);
+                    console.log(`Basket position: (${BASKET_X.toFixed(2)}, ${BASKET_Y.toFixed(2)})`);
+                    console.log(`Closest distance to basket: ${distToBasket.toFixed(2)} pixels`);
+
+                    // Draw evaluated position as red dot
+                    ctx.beginPath();
+                    ctx.fillStyle = 'red';
+                    ctx.arc(evalPos.x, evalPos.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (madeShot || distToBasket < SUCCESS_THRESHOLD) {
+                        feedbackElement.innerHTML = '<p style="color: green; font-weight: bold;">Great Shot!</p><p>The ball went into the basket!</p>';
+                    } else {
+                        const offsetX = evalPos.x - BASKET_X;
+                        const suggestion = offsetX > 0 ? 'aim slightly left' : 'aim slightly right';
+                        feedbackElement.innerHTML = `<p style="color: red; font-weight: bold;">Missed!</p><p>Try to ${suggestion} next time. (Distance: ${distToBasket.toFixed(2)}px)</p>`;
+                    }
+                } else {
+                    feedbackElement.innerHTML = '<p style="color: red; font-weight: bold;">Error!</p><p>No ball detected in the video.</p>';
+                }
+                videoElement.pause();
+                isAnalyzing = false;
+            } else {
+                requestAnimationFrame(drawTrajectory);
+            }
+        }
+
+        // Handle video upload
+        document.getElementById('videoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.type === 'video/mp4' || file.type === 'video/webm') {
+                    const url = URL.createObjectURL(file);
+                    videoElement.src = url;
+                    videoElement.load();
+                    videoElement.onplay = () => {
+                        ballPositions = [];
+                        rawPositions = [];
+                        lastKnownPosition = null;
+                        closestDistToBasket = Infinity;
+                        closestPosition = null;
+                        madeShot = false;
+                        isAnalyzing = true;
+                        feedbackElement.innerHTML = '<p>Analyzing your shot...</p>';
+                        errorMessage.style.display = 'none';
+                        console.log('Video started. Beginning ball tracking.');
+                        drawTrajectory();
+                    };
+                    videoElement.play().catch(err => {
+                        console.error("Video play error:", err);
+                        errorMessage.style.display = 'block';
+                    });
+                } else {
+                    errorMessage.style.display = 'block';
+                    console.error("Invalid video format. Please use MP4 or WebM.");
+                }
+            }
+        });
+
+        // Draw initial basket position
+        ctx.beginPath();
+        ctx.fillStyle = 'orange';
+        ctx.arc(BASKET_X, BASKET_Y, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.strokeStyle = 'cyan';
+        ctx.lineWidth = 2;
+        ctx.arc(BASKET_X, BASKET_Y, HOOP_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
+    </script>
+</body>
+</html>

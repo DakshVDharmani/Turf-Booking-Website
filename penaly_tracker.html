@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penalty Shootout Analyzer (Trajectory Fix)</title>
+    <style>
+        body {
+            background-color: #e6f3e6;
+            font-family: Arial, sans-serif;
+            color: #2e7d32;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        video {
+            max-width: 640px;
+            border: 2px solid #4caf50;
+            display: none;
+        }
+        canvas {
+            max-width: 640px;
+            border: 2px solid #000000;
+        }
+        .controls {
+            background: #c8e6c9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 640px;
+            text-align: center;
+        }
+        button, input {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled), input:hover {
+            background: #388e3c;
+        }
+        #output {
+            margin-top: 20px;
+            font-weight: bold;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Penalty Shootout Analyzer</h1>
+    <video id="video"></video>
+<div class="controls">
+    <input type="file" id="videoInput" accept="video/mp4" onchange="checkFile()">
+    <button id="startButton" onclick="startTracking()" disabled>Start Tracking</button>
+    <button id="markButton" onclick="pauseForMarking()" disabled>Mark Ball Position</button>
+    <button id="analyzeButton" onclick="calculateTrajectory()" disabled>Analyze</button>
+    <p id="output">Upload a penalty shootout MP4. Then mark the ball frame-by-frame.</p>
+</div>
+    <canvas id="canvasOutput"></canvas>
+  <script>
+    let video, canvas, ctx;
+    let ballTrajectory = [];
+    let FRAME_RATE = 30;
+    let PLAYBACK_SPEED = 0.15;
+    let windSpeed = Math.random() * 10 - 5;
+
+    function init() {
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvasOutput');
+        ctx = canvas.getContext('2d');
+        canvas.width = 640;
+        canvas.height = 480;
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (video.paused) {
+                ballTrajectory.push({ x, y });
+                document.getElementById('output').innerText = `Marked point #${ballTrajectory.length}: (${x.toFixed(0)}, ${y.toFixed(0)})`;
+
+                drawFrame();
+                if (ballTrajectory.length >= 2) {
+                    document.getElementById('analyzeButton').disabled = false;
+                }
+            }
+        });
+
+        video.addEventListener('timeupdate', drawFrame);
+    }
+
+    function checkFile() {
+        const input = document.getElementById('videoInput');
+        if (input.files.length > 0) {
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('output').innerText = `Loaded: ${input.files[0].name}. Click "Start Tracking".`;
+        }
+    }
+
+    function startTracking() {
+        const file = document.getElementById('videoInput').files[0];
+        if (!file) return;
+
+        video.src = URL.createObjectURL(file);
+        video.onloadedmetadata = () => {
+            video.playbackRate = PLAYBACK_SPEED;
+            video.play();
+            document.getElementById('markButton').disabled = false;
+            document.getElementById('output').innerText = `Use "Mark Ball Position" to pause at a frame and click the ball.`;
+        };
+    }
+
+    function pauseForMarking() {
+        video.pause();
+        document.getElementById('output').innerText = `Video paused. Click on the ball to mark its position.`;
+    }
+
+    function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        if (ballTrajectory.length > 1) {
+            ctx.beginPath();
+            for (let i = 1; i < ballTrajectory.length; i++) {
+                ctx.moveTo(ballTrajectory[i - 1].x, ballTrajectory[i - 1].y);
+                ctx.lineTo(ballTrajectory[i].x, ballTrajectory[i].y);
+            }
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        for (let point of ballTrajectory) {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';
+            ctx.fill();
+        }
+    }
+
+    function calculateTrajectory() {
+        if (ballTrajectory.length < 2) {
+            document.getElementById('output').innerText = `Error: At least 2 points needed for analysis.`;
+            return;
+        }
+
+        const start = ballTrajectory[0];
+        const end = ballTrajectory[ballTrajectory.length - 1];
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        const frames = ballTrajectory.length - 1;
+        const timeSec = frames / (FRAME_RATE * PLAYBACK_SPEED);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const speed = distance / timeSec;
+
+        const windEffect = windSpeed * 10;
+        const finalX = end.x + windEffect;
+        const finalY = end.y;
+
+        const goal = finalX >= 630 && finalY >= 100 && finalY <= 380;
+
+        document.getElementById('output').innerText =
+            `Analysis:\n` +
+            `Angle: ${angle.toFixed(2)}°\n` +
+            `Speed: ${speed.toFixed(2)} px/sec\n` +
+            `Wind: ${windSpeed.toFixed(2)} m/s\n` +
+            `Final X (with wind): ${finalX.toFixed(0)}\n` +
+            `GOAL? → ${goal ? "YES 🎯" : "NO ❌"}`;
+    }
+
+    init();
+</script>
+</body>
+</html>

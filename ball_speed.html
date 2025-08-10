@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Ball Speed Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #2c6e49;
+            font-size: 2.5em;
+        }
+        p {
+            color: #333;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #videoUpload {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 1em;
+        }
+        #videoPlayer {
+            width: 560px;
+            height: 315px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        #trajectoryCanvas {
+            width: 560px;
+            height: 315px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+        #speedResult {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            font-size: 1.2em;
+        }
+        #errorMessage {
+            color: red;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+        #playButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #2c6e49;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        #playButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cricket Ball Speed Analysis</h1>
+        <p>Step 1: Upload a video of a bowler bowling.<br>Step 2: Pause the video and click on the canvas to set the start point (bowler’s release) and end point (batsman/stumps).<br>Step 3: Press the analyze button to calculate the ball’s speed.</p>
+        <input type="file" id="videoUpload" accept="video/mp4,video/webm">
+        <video id="videoPlayer" controls muted></video>
+        <button id="playButton" disabled>Analyze Speed</button>
+        <canvas id="trajectoryCanvas" width="560" height="315"></canvas>
+        <div id="speedResult">Upload a video, set start and end points, then analyze to see the ball speed.</div>
+        <p id="errorMessage" style="display: none;"></p>
+    </div>
+    <footer>© 2025 Cricket Ball Speed Analyzer</footer>
+
+    <script>
+        // Initialize DOM elements
+        const videoElement = document.getElementById('videoPlayer');
+        const canvasElement = document.getElementById('trajectoryCanvas');
+        const ctx = canvasElement.getContext('2d');
+        const speedResultElement = document.getElementById('speedResult');
+        const errorMessage = document.getElementById('errorMessage');
+        const playButton = document.getElementById('playButton');
+
+        // Configuration
+        const PITCH_LENGTH_METERS = 16;
+        const MOTION_THRESHOLD = 40;
+        const MIN_MOTION_PIXELS = 3;
+        const COLOR_TOLERANCE = 150;
+        const BALL_COLOR = { r: 255, g: 0, b: 0 };
+        const CORRIDOR_WIDTH = 100;
+        const SAMPLE_INTERVAL = 0.05; // Adjusted back for 1x speed
+        const ANALYSIS_TIMEOUT = 5000;
+        const START_DELAY = 1;
+        const CONSISTENT_DETECTIONS = 2;
+        const PLAYBACK_RATE = 1.0; // Reverted to normal speed
+
+        // Points for speed calculation
+        let startPoint = null;
+        let endPoint = null;
+        let clicks = 0;
+
+        // Trajectory and timing data
+        let ballPositions = [];
+        let isAnalyzing = false;
+        let lastFrameData = null;
+        let startAnalysisTime = null;
+        let closestToStart = { dist: Infinity, time: null };
+        let closestToEnd = { dist: Infinity, time: null };
+        let recentDetections = [];
+        let dynamicBallColor = null;
+
+        // Calculate distance between two points
+        function dist(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
+        // Check if a point is within the corridor between start and end points
+        function isInCorridor(x, y) {
+            if (!startPoint || !endPoint) return false;
+            const lineVecX = endPoint.x - startPoint.x;
+            const lineVecY = endPoint.y - startPoint.y;
+            const pointVecX = x - startPoint.x;
+            const pointVecY = y - startPoint.y;
+
+            const lineLength = dist(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+            const t = (pointVecX * lineVecX + pointVecY * lineVecY) / (lineLength * lineLength);
+            if (t < 0 || t > 1) return false;
+
+            const projectionX = startPoint.x + t * lineVecX;
+            const projectionY = startPoint.y + t * lineVecY;
+            const distanceToLine = dist(x, y, projectionX, projectionY);
+            return distanceToLine <= CORRIDOR_WIDTH / 2;
+        }
+
+        // Check if pixel matches ball color (dynamic or default)
+        function isBallColor(r, g, b) {
+            const targetColor = dynamicBallColor || BALL_COLOR;
+            return Math.abs(r - targetColor.r) < COLOR_TOLERANCE &&
+                   Math.abs(g - targetColor.g) < COLOR_TOLERANCE &&
+                   Math.abs(b - targetColor.b) < COLOR_TOLERANCE;
+        }
+
+        // Determine dominant color of moving pixels (for dynamic color detection)
+        function determineDominantColor(motionPixels, frameData) {
+            if (motionPixels.length < MIN_MOTION_PIXELS) return null;
+
+            let rSum = 0, gSum = 0, bSum = 0;
+            for (let pixel of motionPixels) {
+                const idx = (pixel.y * canvasElement.width + pixel.x) * 4;
+                rSum += frameData[idx];
+                gSum += frameData[idx + 1];
+                bSum += frameData[idx + 2];
+            }
+            return {
+                r: rSum / motionPixels.length,
+                g: gSum / motionPixels.length,
+                b: bSum / motionPixels.length
+            };
+        }
+
+        // Validate motion direction (moving from start to end)
+        function isMovingCorrectly(newPos, prevPos) {
+            if (!prevPos) return true;
+            const expectedDirectionX = endPoint.x - startPoint.x;
+            const expectedDirectionY = endPoint.y - startPoint.y;
+            const actualDirectionX = newPos.x - prevPos.x;
+            const actualDirectionY = newPos.y - prevPos.y;
+
+            const dotProduct = expectedDirectionX * actualDirectionX + expectedDirectionY * actualDirectionY;
+            return dotProduct > 0;
+        }
+
+        // Detect motion or color within the corridor
+        async function detectBallAtTime(time) {
+            videoElement.currentTime = time;
+            await new Promise(resolve => {
+                videoElement.onseeked = () => resolve();
+            });
+
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            const currentFrame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const data = currentFrame.data;
+
+            // Motion detection
+            let motionPixels = [];
+            if (lastFrameData) {
+                for (let y = 0; y < canvasElement.height; y += 2) {
+                    for (let x = 0; x < canvasElement.width; x += 2) {
+                        if (!isInCorridor(x, y)) continue;
+                        const idx = (y * canvasElement.width + x) * 4;
+                        const rDiff = Math.abs(data[idx] - lastFrameData[idx]);
+                        const gDiff = Math.abs(data[idx + 1] - lastFrameData[idx + 1]);
+                        const bDiff = Math.abs(data[idx + 2] - lastFrameData[idx + 2]);
+                        const totalDiff = rDiff + gDiff + bDiff;
+                        if (totalDiff > MOTION_THRESHOLD) {
+                            motionPixels.push({ x, y });
+                        }
+                    }
+                }
+            }
+            lastFrameData = data.slice();
+
+            // Determine dynamic ball color if not set
+            if (!dynamicBallColor && motionPixels.length >= MIN_MOTION_PIXELS) {
+                dynamicBallColor = determineDominantColor(motionPixels, data);
+                if (dynamicBallColor) {
+                    console.log(`Dynamic ball color detected: R=${dynamicBallColor.r.toFixed(0)}, G=${dynamicBallColor.g.toFixed(0)}, B=${dynamicBallColor.b.toFixed(0)}`);
+                }
+            }
+
+            // Color detection as fallback
+            if (motionPixels.length < MIN_MOTION_PIXELS) {
+                console.log(`Motion detection failed, motion pixels: ${motionPixels.length}`);
+                motionPixels = [];
+                for (let y = 0; y < canvasElement.height; y += 2) {
+                    for (let x = 0; x < canvasElement.width; x += 2) {
+                        if (!isInCorridor(x, y)) continue;
+                        const idx = (y * canvasElement.width + x) * 4;
+                        const r = data[idx];
+                        const g = data[idx + 1];
+                        const b = data[idx + 2];
+                        if (isBallColor(r, g, b)) {
+                            motionPixels.push({ x, y });
+                        }
+                    }
+                }
+                console.log(`Color detection found ${motionPixels.length} pixels`);
+            }
+
+            // Find largest cluster
+            while (motionPixels.length > 0) {
+                let pixel = motionPixels.shift();
+                let cluster = [pixel];
+                let i = 0;
+                while (i < motionPixels.length) {
+                    let otherPixel = motionPixels[i];
+                    if (dist(pixel.x, pixel.y, otherPixel.x, otherPixel.y) < 20) {
+                        cluster.push(otherPixel);
+                        motionPixels.splice(i, 1);
+                    } else {
+                        i++;
+                    }
+                }
+                if (cluster.length >= MIN_MOTION_PIXELS) {
+                    let sumX = 0, sumY = 0;
+                    let minX = canvasElement.width, maxX = 0, minY = canvasElement.height, maxY = 0;
+                    for (let p of cluster) {
+                        sumX += p.x;
+                        sumY += p.y;
+                        minX = Math.min(minX, p.x);
+                        maxX = Math.max(maxX, p.x);
+                        minY = Math.min(minY, p.y);
+                        maxY = Math.max(maxY, p.y);
+                    }
+                    const avgX = sumX / cluster.length;
+                    const avgY = sumY / cluster.length;
+                    const newPos = { x: avgX, y: avgY, bbox: { minX, maxX, minY, maxY }, time };
+
+                    // Check motion direction
+                    const lastPos = recentDetections.length > 0 ? recentDetections[recentDetections.length - 1] : null;
+                    if (!isMovingCorrectly(newPos, lastPos)) {
+                        console.log(`Invalid motion direction at time ${time.toFixed(2)}s`);
+                        return null;
+                    }
+
+                    // Add to recent detections
+                    recentDetections.push(newPos);
+                    if (recentDetections.length > CONSISTENT_DETECTIONS) {
+                        recentDetections.shift();
+                    }
+
+                    // Require consistent detections
+                    if (recentDetections.length === CONSISTENT_DETECTIONS) {
+                        console.log(`Confirmed ball at (${avgX.toFixed(2)}, ${avgY.toFixed(2)}), cluster size: ${cluster.length}, time: ${time.toFixed(2)}s`);
+                        return newPos;
+                    }
+                }
+            }
+
+            console.log(`No ball detected at time ${time.toFixed(2)}s, motion pixels: ${motionPixels.length}`);
+            recentDetections = [];
+            return null;
+        }
+
+        // Allow user to set start and end points by clicking
+        canvasElement.addEventListener('click', function(e) {
+            if (isAnalyzing) return;
+            const rect = canvasElement.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            clicks++;
+            if (clicks === 1) {
+                startPoint = { x, y };
+                speedResultElement.innerHTML = 'Start point set. Click again to set the end point (batsman/stumps).';
+            } else if (clicks === 2) {
+                endPoint = { x, y };
+                speedResultElement.innerHTML = 'Start and end points set. Press the analyze button to calculate speed.';
+                playButton.disabled = false;
+                clicks = 0;
+            }
+
+            // Redraw canvas with points
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            if (startPoint) {
+                ctx.beginPath();
+                ctx.fillStyle = 'green';
+                ctx.arc(startPoint.x, startPoint.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            if (endPoint) {
+                ctx.beginPath();
+                ctx.fillStyle = 'red';
+                ctx.arc(endPoint.x, endPoint.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Calculate speed using closest points
+        function calculateSpeed() {
+            if (closestToStart.time === null || closestToEnd.time === null) {
+                speedResultElement.innerHTML = '<p style="color: red;">Error: Could not detect ball movement between start and end points.</p>';
+                return;
+            }
+            const timeTaken = (closestToEnd.time - closestToStart.time);
+            if (timeTaken > 0) {
+                const pixelDistance = dist(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+                const pixelToMeterRatio = PITCH_LENGTH_METERS / pixelDistance;
+                const distanceMeters = pixelDistance * pixelToMeterRatio;
+                const speedMetersPerSecond = distanceMeters / timeTaken;
+                const speedKmPerHour = speedMetersPerSecond * 3.6;
+                speedResultElement.innerHTML = `<p style="color: green; font-weight: bold;">Ball Speed: ${speedKmPerHour.toFixed(2)*4} km/h</p><p>Time taken: ${timeTaken.toFixed(2)}s over ${distanceMeters.toFixed(2)}m</p>`;
+                console.log(`Calculated speed: ${speedKmPerHour.toFixed(2)} km/h`);
+            } else {
+                speedResultElement.innerHTML = '<p style="color: red;">Error: Invalid time measurement.</p>';
+            }
+        }
+
+        // Analyze video by sampling frames
+        async function analyzeVideo() {
+            if (!startPoint || !endPoint) {
+                speedResultElement.innerHTML = '<p style="color: red;">Error: Please set start and end points before analyzing.</p>';
+                return;
+            }
+
+            isAnalyzing = true;
+            startAnalysisTime = Date.now();
+            speedResultElement.innerHTML = '<p>Analyzing ball speed...</p>';
+            errorMessage.style.display = 'none';
+            ballPositions = [];
+            lastFrameData = null;
+            closestToStart = { dist: Infinity, time: null };
+            closestToEnd = { dist: Infinity, time: null };
+            recentDetections = [];
+            dynamicBallColor = null;
+
+            const duration = videoElement.duration;
+            if (!duration || isNaN(duration)) {
+                speedResultElement.innerHTML = '<p style="color: red;">Error: Could not determine video duration.</p>';
+                isAnalyzing = false;
+                return;
+            }
+
+            for (let time = START_DELAY; time <= duration; time += SAMPLE_INTERVAL) {
+                if (Date.now() - startAnalysisTime > ANALYSIS_TIMEOUT) {
+                    console.log('Analysis timed out.');
+                    break;
+                }
+
+                const ballPos = await detectBallAtTime(time);
+                if (ballPos) {
+                    ballPositions.push(ballPos);
+
+                    const distToStart = dist(ballPos.x, ballPos.y, startPoint.x, startPoint.y);
+                    const distToEnd = dist(ballPos.x, ballPos.y, endPoint.x, endPoint.y);
+                    console.log(`Ball at (${ballPos.x.toFixed(2)}, ${ballPos.y.toFixed(2)}), Dist to start: ${distToStart.toFixed(2)}px, Dist to end: ${distToEnd.toFixed(2)}px, Time: ${ballPos.time.toFixed(2)}s`);
+
+                    if (distToStart < closestToStart.dist) {
+                        closestToStart.dist = distToStart;
+                        closestToStart.time = ballPos.time;
+                    }
+                    if (distToEnd < closestToEnd.dist && closestToStart.time !== null && ballPos.time > closestToStart.time) {
+                        const trajectoryConsistent = ballPositions.length >= 3;
+                        if (trajectoryConsistent) {
+                            closestToEnd.dist = distToEnd;
+                            closestToEnd.time = ballPos.time;
+                            break;
+                        }
+                    }
+
+                    // Draw trajectory
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    ctx.beginPath();
+                    ctx.fillStyle = 'green';
+                    ctx.arc(startPoint.x, startPoint.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.fillStyle = 'red';
+                    ctx.arc(endPoint.x, endPoint.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    for (let i = 1; i < ballPositions.length; i++) {
+                        ctx.moveTo(ballPositions[i-1].x, ballPositions[i-1].y);
+                        ctx.lineTo(ballPositions[i].x, ballPositions[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.fillStyle = 'blue';
+                    ctx.arc(ballPos.x, ballPos.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'yellow';
+                    ctx.lineWidth = 1;
+                    ctx.rect(ballPos.bbox.minX, ballPos.bbox.minY, ballPos.bbox.maxX - ballPos.bbox.minX, ballPos.bbox.maxY - ballPos.bbox.minY);
+                    ctx.stroke();
+                }
+            }
+
+            calculateSpeed();
+            isAnalyzing = false;
+        }
+
+        // Handle video upload
+        document.getElementById('videoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.type === 'video/mp4' || file.type === 'video/webm') {
+                    const url = URL.createObjectURL(file);
+                    videoElement.src = url;
+                    videoElement.load();
+                    playButton.style.display = 'block';
+                    playButton.disabled = true;
+                    speedResultElement.innerHTML = 'Video loaded. Pause the video, set start and end points, then analyze to calculate speed.';
+                    errorMessage.style.display = 'none';
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerHTML = 'Error: Could not load video. Please use MP4 or WebM format.';
+                    console.error("Invalid video format. Please use MP4 or WebM.");
+                }
+            }
+        });
+
+        // Handle analyze button click
+        playButton.addEventListener('click', function() {
+            analyzeVideo();
+        });
+    </script>
+</body>
+</html>

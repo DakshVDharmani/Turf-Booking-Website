@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Shot Calculators</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a3c34, #2e6f56);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a3c34, #2e6f56);
+            color: #d4edda;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: 8px 0 25px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+                box-shadow: none;
+            }
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 2px solid #a3e635;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #a3e635;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-nav {
+            margin-top: 0;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem 2rem;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #d4edda;
+            transition: background 0.3s ease, padding-left 0.3s ease, color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar-link i {
+            margin-right: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: #a3e635;
+            color: #1a3c34;
+            padding-left: 2.5rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-sidebar {
+            position: fixed;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #a3e635;
+            color: #1a3c34;
+            padding: 1rem;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-sidebar.open {
+            transform: translateY(-50%) rotate(180deg);
+            background: #52c234;
+        }
+
+        .toggle-sidebar:hover {
+            background: #52c234;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .content-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            transition: transform 0.4s ease;
+            padding: 20px;
+        }
+
+        .content-wrapper.sidebar-open {
+            transform: translateX(300px);
+        }
+
+        @media (min-width: 1024px) {
+            .content-wrapper {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+            .content-wrapper.sidebar-open {
+                transform: translateX(0);
+            }
+            .toggle-sidebar {
+                display: none;
+            }
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin-bottom: 80px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #a3e635;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: #d4edda;
+            margin-top: 10px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(163, 230, 53, 0.3);
+            min-height: 600px;
+        }
+
+        .section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(163, 230, 53, 0.5);
+        }
+
+        .section img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9;
+            max-height: 600px;
+            object-fit: cover;
+            border-bottom: 3px solid #a3e635;
+            display: block;
+        }
+
+        .section-content {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .section-content h2 {
+            font-size: 1.8rem;
+            color: #a3e635;
+            margin-bottom: 10px;
+        }
+
+        .section-content p {
+            font-size: 1rem;
+            color: #d4edda;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .sport-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 3rem;
+            color: #a3e635;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            padding: 10px;
+        }
+
+        .section:hover .sport-icon {
+            opacity: 1;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #a3e635, #52c234);
+            color: #1a3c34;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #52c234, #a3e635);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(163, 230, 53, 0.7);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            color: #d4edda;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .section {
+                min-height: 500px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .section img {
+                max-height: 450px;
+                aspect-ratio: 16/9;
+            }
+
+            .sport-icon {
+                font-size: 2.5rem;
+                top: 10px;
+                right: 10px;
+                padding: 8px;
+            }
+
+            .section-content {
+                padding: 30px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .section {
+                min-height: 400px;
+            }
+
+            .section img {
+                max-height: 350px;
+            }
+
+            .section-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .section-content p {
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 10px 25px;
+                font-size: 0.9rem;
+            }
+
+            .sport-icon {
+                font-size: 2rem;
+                top: 8px;
+                right: 8px;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>Sports Calculators</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="website_mainpage.html" class="sidebar-link"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="ball_tracker.html" class="sidebar-link"><i class="fas fa-cricket-bat-ball"></i> Cricket Shot Range</a></li>
+                <li><a href="penaly_tracker.html" class="sidebar-link"><i class="fas fa-futbol"></i> Football Penalty Goal</a></li>
+                <li><a href="ball_trajectory.html" class="sidebar-link"><i class="fas fa-basketball"></i> Basketball Shot Success</a></li>
+                <li><a href="ball_speed.html" class="sidebar-link active"><i class="fas fa-tachometer-alt"></i> Cricket Ball Speed</a></li>
+                <li><a href="aboutus.html" class="sidebar-link"><i class="fas fa-info-circle"></i> About Us</a></li>
+                <li><a href="contactus.html" class="sidebar-link"><i class="fas fa-envelope"></i> Contact Us</a></li>
+            </ul>
+        </nav>
+    </div>
+    <button id="toggleSidebar" class="toggle-sidebar lg:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+    <div class="content-wrapper">
+        <header>
+            <h1>Sports Shot Calculators</h1>
+            <p>Test your skills with our interactive sports physics tools!</p>
+        </header>
+
+        <div class="container">
+            <div class="section">
+                <i class="fas fa-cricket-bat-ball sport-icon"></i>
+                <img src="assets/range.jpg" alt="Cricket player hitting a shot">
+                <div class="section-content">
+                    <h2>Cricket Shot Range</h2>
+                    <p>Calculate the distance your cricket shot will travel based on angle, speed, and spin. Perfect for mastering those lofted cover drives!</p>
+                    <a href="ball_tracker.html" class="btn">Check Range</a>
+                </div>
+            </div>
+
+            <div class="section">
+                <i class="fas fa-futbol sport-icon"></i>
+                <img src="assets/penalty.jpg" alt="Football player taking a penalty kick">
+                <div class="section-content">
+                    <h2>Football Penalty Goal</h2>
+                    <p>Determine if your penalty kick will find the back of the net. Input shot angle, speed, and goalkeeper position to test your precision!</p>
+                    <a href="penaly_tracker.html" class="btn">Check Goal</a>
+                </div>
+            </div>
+
+            <div class="section">
+                <i class="fas fa-basketball sport-icon"></i>
+                <img src="assets/basketball.jpg" alt="Basketball player shooting the ball">
+                <div class="section-content">
+                    <h2>Basketball Shot Success</h2>
+                    <p>Find out if your basketball shot will swish through the hoop. Enter arc, velocity, and distance to analyze your shooting accuracy!</p>
+                    <a href="ball_trajectory.html" class="btn">Check Shot</a>
+                </div>
+            </div>
+
+            <div class="section">
+                <i class="fas fa-tachometer-alt sport-icon"></i>
+                <img src="assets/fastbowl.jpg" alt="Cricket bowler delivering a fast ball">
+                <div class="section-content">
+                    <h2>Cricket Ball Speed</h2>
+                    <p>Measure the speed of a moving cricket ball and rate its pace. Input delivery details to see if you’re bowling express or spin!</p>
+                    <a href="ball_speed.html" class="btn">Check Speed</a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Sports Shot Calculators. Built for sports enthusiasts!</p>
+        </footer>
+    </div>
+    <script>
+        // Sidebar Toggle
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.querySelector('.content-wrapper');
+        if (toggleSidebarBtn && sidebar) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                toggleSidebarBtn.classList.toggle('open');
+                contentWrapper.classList.toggle('sidebar-open');
+            });
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 1024 && !sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                    toggleSidebarBtn.classList.remove('open');
+                    contentWrapper.classList.remove('sidebar-open');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
